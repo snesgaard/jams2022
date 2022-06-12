@@ -15,14 +15,49 @@ local function cancel_horz_velocity(v) return vec2(0, v.y) end
 
 local function cancel_vert_velocity(v) return vec2(v.x, 0) end
 
-local function handle_collision(ecs_world, col_info)
-    if math.abs(col_info.normal.x) >= 0.9 then
-        ecs_world:map(nw.component.velocity, col_info.item, cancel_horz_velocity)
-        ecs_world:map(nw.component.velocity, col_info.other, cancel_horz_velocity)
-    elseif math.abs(col_info.normal.y) >= 0.9 then
-        ecs_world:map(nw.component.velocity, col_info.item, cancel_vert_velocity)
-        ecs_world:map(nw.component.velocity, col_info.other, cancel_vert_velocity)
+local function sign(x)
+    if x < 0 then
+        return -1
+    elseif 0 < x then
+        return 1
+    else
+        return 0
     end
+end
+
+local function cancel_on_y_axis(v, y_axis)
+    local s_v = sign(v.y)
+    local s_a = sign(y_axis)
+
+    if s_v == -s_a then return vec2(v.x, 0) end
+
+    return v
+end
+
+local function cancel_on_x_axis(v, x_axis)
+    local s_v = sign(v.x)
+    local s_a = sign(x_axis)
+
+    if s_v == -s_a then return vec2(0, v.y) end
+
+    return v
+end
+
+local function cancel_on_axis(v, x_axis, y_axis)
+    local v = cancel_on_x_axis(v, x_axis)
+    local v = cancel_on_y_axis(v, y_axis)
+    return v
+end
+
+local function handle_collision(ecs_world, col_info)
+    ecs_world:map(
+        nw.component.velocity, col_info.item,
+        cancel_on_axis, col_info.normal.x, col_info.normal.y
+    )
+    ecs_world:map(
+        nw.component.velocity, col_info.other,
+        cancel_on_axis, -col_info.normal.x, -col_info.normal.y
+    )
 end
 
 return function(ctx, ecs_world)

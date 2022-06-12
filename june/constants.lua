@@ -1,6 +1,7 @@
 return {
     id = {
         global = "global",
-        player = "player"
+        player = "player",
+        minion = "minion"
     }
 }

@@ -9,9 +9,17 @@ return function(ctx)
         :set(component.event_callback, function(...) ctx:emit(...) end)
 
     ecs_world:entity(constants.id.player)
-        :assemble(collision.set_hitbox, 0, 0, 20, 20)
+        :assemble(collision.set_hitbox, 20, 20)
         :assemble(collision.set_bump_world, bump_world)
+        :assemble(collision.warp_to, 200, 200)
+        :set(nw.component.tag, "actor")
         :set(nw.component.gravity, 0, 100)
+
+    ecs_world:entity(constants.id.minion)
+        :assemble(collision.set_hitbox,10, 20)
+        :assemble(collision.set_bump_world, bump_world)
+        :assemble(collision.warp_to, 400, 270)
+        :set(nw.component.tag, "actor")
 
     bump_world:add("platform", 0, 300, 1000, 200)
 

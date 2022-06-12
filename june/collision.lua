@@ -1,7 +1,7 @@
 local collision = {}
 
 local function add_entity_to_world(entity)
-    local hitbox = entity % nw.component.hitbox
+    local hitbox = entity % component.body
     local bump_world = entity % nw.component.bump_world
 
     if not hitbox or not bump_world then return end
@@ -18,7 +18,7 @@ local function add_entity_to_world(entity)
 end
 
 function collision.set_hitbox(entity, ...)
-    entity:set(nw.component.hitbox, ...)
+    entity:set(component.body, ...)
     add_entity_to_world(entity)
 end
 
@@ -33,6 +33,25 @@ function collision.set_bump_world(entity, bump_world)
     add_entity_to_world(entity)
 end
 
+local function collision_filter(ecs_world, a, b)
+    local tag_a = ecs_world:get(nw.component.tag, a)
+    local tag_b = ecs_world:get(nw.component.tag, b)
+
+    if not tag_a or not tag_b then return "slide" end
+end
+
+local cached_filter = {}
+
+local function get_filter(ecs_world)
+    if not cached_filter[ecs_world] then
+        cached_filter[ecs_world] = function(a, b)
+            return collision_filter(ecs_world, a, b)
+        end
+    end
+
+    return cached_filter[ecs_world]
+end
+
 function collision.move(entity, dx, dy)
     local bump_world = entity % nw.component.bump_world
     local pos = entity:ensure(nw.component.position)
@@ -44,9 +63,17 @@ function collision.move(entity, dx, dy)
 
     local x, y = bump_world:getRect(entity.id)
     local tx, ty = x + dx, y + dy
-    local ax, ay, col_info = bump_world:move(entity.id, tx, ty)
 
-    if #col_info > 0 then emit_event(entity, "collision", col_info) end
+    local ecs_world = entity:world()
+
+    local ax, ay, col_info = bump_world:move(
+        entity.id, tx, ty, get_filter(ecs_world)
+    )
+
+    if #col_info > 0 then
+        col_info.ecs_world = entity:world()
+        emit_event(entity, "collision", col_info)
+    end
 
     local real_dx, real_dy = ax - x, ay - y
 
@@ -62,5 +89,19 @@ function collision.move_to(entity, x, y)
     return pos.x + real_dx, pos.y + real_dy, col_info
 end
 
+function collision.warp_to(entity, x, y)
+    local bump_world = entity % nw.component.bump_world
+    local pos = entity:ensure(nw.component.position)
+
+    entity:set(nw.component.position, x, y)
+
+    if not bump_world or not bump_world:hasItem(entity.id) then return end
+
+    bump_world:update(entity.id, x, y)
+end
+
+function collision.is_solid(col_info)
+    return col_info.type == "slide"
+end
 
 return collision

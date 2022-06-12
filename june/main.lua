@@ -1,3 +1,9 @@
+function class()
+    local c = {}
+    c.__index = c
+    return c
+end
+
 nw = require "nodeworks"
 constants = require "constants"
 collision = require "collision"
