@@ -1,5 +1,7 @@
 local bumpdebug = require "bumpdebug"
 local spawn_point = require "spawn_point"
+local render = require "render"
+local drawable = require "drawable"
 
 return function(ctx)
     local bump_world = nw.third.bump.newWorld()
@@ -15,25 +17,33 @@ return function(ctx)
         :assemble(collision.warp_to, 200, 300)
         :set(nw.component.tag, "actor")
         :set(nw.component.gravity, 0, 100)
+        :set(nw.component.drawable, drawable.body)
+        :set(component.actor)
 
     ctx.spawn = ecs_world:entity("spawn")
         :assemble(spawn_point.assemble, 100, 300, bump_world)
+
+    ctx.switch = ecs_world:entity("switch")
+        :assemble(collision.warp_to, 300, 300)
+        :assemble(collision.set_hitbox, 50, 20)
+        :assemble(collision.set_bump_world, bump_world)
+        :set(nw.component.tag, "actor")
+        :set(nw.component.drawable, drawable.ground_switch)
+        :set(component.ground_switch)
 
     bump_world:add("platform", 0, 300, 1000, 200)
 
     ctx.world:push(require "system.gravity", ecs_world)
     ctx.world:push(require "system.player_control", ecs_world)
+    ctx.world:push(require "system.ground_switch", ecs_world)
 
     local draw = ctx:listen("draw"):collect()
 
     while ctx:is_alive() do
         draw:pop():foreach(function()
-            draw_world(bump_world)
-
-            local pos_table = ecs_world:get_component_table(nw.component.position)
-            for entity, pos in pairs(pos_table) do
-                gfx.circle("line", pos.x, pos.y, 5)
-            end
+            render.draw_scene(ecs_world)
+            --draw_world(bump_world)
+            render.draw_positions(ecs_world)
         end)
 
         ctx:yield()

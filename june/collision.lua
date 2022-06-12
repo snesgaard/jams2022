@@ -1,3 +1,17 @@
+local filter_caller = class()
+
+function filter_caller.create(ecs_world)
+    return setmetatable({ecs_world=ecs_world}, filter_caller)
+end
+
+function filter_caller:set_filter(filter)
+    self.filter = filter
+end
+
+function filter_caller:__call(...)
+    if self.filter then return self.filter(self.ecs_world, ...) end
+end
+
 local collision = {}
 
 local function add_entity_to_world(entity)
@@ -9,7 +23,6 @@ local function add_entity_to_world(entity)
     local pos = entity:ensure(nw.component.position)
 
     local world_hb = hitbox:move(pos.x, pos.y)
-    print(world_hb)
 
     if not bump_world:hasItem(entity.id) then
         bump_world:add(entity.id, world_hb:unpack())
@@ -34,7 +47,7 @@ function collision.set_bump_world(entity, bump_world)
     add_entity_to_world(entity)
 end
 
-local function collision_filter(ecs_world, a, b)
+function collision.default_filter(ecs_world, a, b)
     local tag_a = ecs_world:get(nw.component.tag, a)
     local tag_b = ecs_world:get(nw.component.tag, b)
 
@@ -45,15 +58,13 @@ local cached_filter = {}
 
 local function get_filter(ecs_world)
     if not cached_filter[ecs_world] then
-        cached_filter[ecs_world] = function(a, b)
-            return collision_filter(ecs_world, a, b)
-        end
+        cached_filter[ecs_world] = filter_caller.create(ecs_world)
     end
 
     return cached_filter[ecs_world]
 end
 
-function collision.move(entity, dx, dy)
+function collision.move(entity, dx, dy, filter)
     local bump_world = entity % nw.component.bump_world
     local pos = entity:ensure(nw.component.position)
 
@@ -67,8 +78,10 @@ function collision.move(entity, dx, dy)
 
     local ecs_world = entity:world()
 
+    local caller = get_filter(ecs_world)
+    caller:set_filter(filter or collision.default_filter)
     local ax, ay, col_info = bump_world:move(
-        entity.id, tx, ty, get_filter(ecs_world)
+        entity.id, tx, ty, caller
     )
 
     if #col_info > 0 then
@@ -83,7 +96,7 @@ function collision.move(entity, dx, dy)
     return real_dx, real_dy, col_info
 end
 
-function collision.move_to(entity, x, y)
+function collision.move_to(entity, x, y, filter)
     local pos = entity:ensure(nw.component.position)
     local dx, dy = x - pos.x, y - pos.y
     local real_dx, real_dy, col_info = collision.move(entity, dx, dy)
@@ -107,8 +120,11 @@ function collision.is_solid(col_info)
     return col_info.type == "slide"
 end
 
-local function sanitize_spatial(x, y, w, h)
-    if w == nil then
+local function sanitize_spatial(entity, x, y, w, h)
+    if x == nil then
+        local hitbox = entity % component.body
+        if hitbox then return hitbox:unpack() end
+    elseif w == nil then
         return -x / 2, -y / 2, x, y
     else
         return x, y, w, h
@@ -117,7 +133,10 @@ end
 
 function collision.check(entity, x, y, w, h)
     local pos = entity:ensure(nw.component.position)
-    local x, y, w, h = sanitize_spatial(x, y, w, h)
+    local x, y, w, h = sanitize_spatial(entity, x, y, w, h)
+
+    if not x then return list() end
+
     local bump_world = entity % nw.component.bump_world
     if not bump_world then return list() end
     local items = bump_world:queryRect(x + pos.x, y + pos.y, w, h)

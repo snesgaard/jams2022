@@ -6,6 +6,7 @@ function spawn_point.assemble(entity, x, y, bump_world)
         :assemble(collision.set_bump_world, bump_world)
         :assemble(collision.warp_to, x, y)
         :set(nw.component.tag, "actor")
+        :set(component.actor)
         :set(component.spawn_point)
 end
 
@@ -15,6 +16,7 @@ function spawn_point.assemble_minion(entity, x, y, bump_world)
         :assemble(collision.set_bump_world, bump_world)
         :assemble(collision.warp_to, x, y)
         :set(nw.component.tag, "actor")
+        :set(component.actor)
         :set(nw.component.gravity, 0, 200)
 end
 
