@@ -54,6 +54,13 @@ function collision.default_filter(ecs_world, a, b)
     if not tag_a or not tag_b then return "slide" end
 end
 
+function collision.init_entity(entity, x, y, hitbox, bump_world)
+    entity
+        :assemble(collision.warp_to, x, y)
+        :assemble(collision.set_hitbox, hitbox:unpack())
+        :assemble(collision.set_bump_world, bump_world)
+end
+
 local cached_filter = {}
 
 local function get_filter(ecs_world)
@@ -64,15 +71,7 @@ local function get_filter(ecs_world)
     return cached_filter[ecs_world]
 end
 
-function collision.move(entity, dx, dy, filter)
-    local bump_world = entity % nw.component.bump_world
-    local pos = entity:ensure(nw.component.position)
-
-    if not bump_world or not bump_world:hasItem(entity.id) then
-        entity:set(nw.component.position, pos + vec2(dx, dy))
-        return dx, dy, dict()
-    end
-
+local function perform_bump_move(bump_world, entity, dx, dy, filter)
     local x, y = bump_world:getRect(entity.id)
     local tx, ty = x + dx, y + dy
 
@@ -90,6 +89,45 @@ function collision.move(entity, dx, dy, filter)
     end
 
     local real_dx, real_dy = ax - x, ay - y
+    return real_dx, real_dy, col_info
+end
+
+function collision.move_body(entity, dx, dy, filter)
+    local bump_world = entity % nw.component.bump_world
+    local hitbox = entity % component.body
+    if not hitbox then return end
+
+    if not bump_world or not bump_world:hasItem(entity.id) then
+        entity:set(
+            component.body, hitbox.x + dx, hitbox.y + dy, hitbox.w, hitbox.h
+        )
+        return dx, dy, dict()
+    end
+
+    local real_dx, real_dy, col_info = perform_bump_move(
+        bump_world, entity, dx, dy, filter
+    )
+
+    entity:set(
+        component.body,
+        hitbox.x + real_dx, hitbox.y + real_dy, hitbox.w, hitbox.h
+    )
+
+    return real_dx, real_dy, col_info
+end
+
+function collision.move(entity, dx, dy, filter)
+    local bump_world = entity % nw.component.bump_world
+    local pos = entity:ensure(nw.component.position)
+
+    if not bump_world or not bump_world:hasItem(entity.id) then
+        entity:set(nw.component.position, pos + vec2(dx, dy))
+        return dx, dy, dict()
+    end
+
+    local real_dx, real_dy, col_info = perform_bump_move(
+        bump_world, entity, dx, dy, filter
+    )
 
     entity:set(nw.component.position, pos + vec2(real_dx, real_dy))
 
@@ -99,8 +137,18 @@ end
 function collision.move_to(entity, x, y, filter)
     local pos = entity:ensure(nw.component.position)
     local dx, dy = x - pos.x, y - pos.y
-    local real_dx, real_dy, col_info = collision.move(entity, dx, dy)
+    local real_dx, real_dy, col_info = collision.move(entity, dx, dy, filter)
     return pos.x + real_dx, pos.y + real_dy, col_info
+end
+
+function collision.move_body_to(entity, x, y, filter)
+    local body = entity % component.body
+    if not body then return 0, 0, {} end
+    local dx, dy = x - body.x, y - body.y
+    local read_dx, real_dx, col_info = collision.move_body(
+        entity, dx, dy, filter
+    )
+    return body.x + real_dx, body.y + real_dy, col_info
 end
 
 function collision.warp_to(entity, x, y)

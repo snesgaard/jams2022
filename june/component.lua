@@ -24,5 +24,7 @@ function component.ground_switch() return true end
 
 function component.draw_order(order) return order or 0 end
 
+function component.door_state(open) return open end
+
 
 return component
