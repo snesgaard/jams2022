@@ -9,6 +9,7 @@ local function add_entity_to_world(entity)
     local pos = entity:ensure(nw.component.position)
 
     local world_hb = hitbox:move(pos.x, pos.y)
+    print(world_hb)
 
     if not bump_world:hasItem(entity.id) then
         bump_world:add(entity.id, world_hb:unpack())
@@ -97,11 +98,30 @@ function collision.warp_to(entity, x, y)
 
     if not bump_world or not bump_world:hasItem(entity.id) then return end
 
-    bump_world:update(entity.id, x, y)
+    local dx, dy = x - pos.x, y - pos.y
+    local bx, by = bump_world:getRect(entity.id)
+    bump_world:update(entity.id, bx + dx, by + dy)
 end
 
 function collision.is_solid(col_info)
     return col_info.type == "slide"
+end
+
+local function sanitize_spatial(x, y, w, h)
+    if w == nil then
+        return -x / 2, -y / 2, x, y
+    else
+        return x, y, w, h
+    end
+end
+
+function collision.check(entity, x, y, w, h)
+    local pos = entity:ensure(nw.component.position)
+    local x, y, w, h = sanitize_spatial(x, y, w, h)
+    local bump_world = entity % nw.component.bump_world
+    if not bump_world then return list() end
+    local items = bump_world:queryRect(x + pos.x, y + pos.y, w, h)
+    return list(unpack(items)):filter(function(id) return id ~= entity.id end)
 end
 
 return collision

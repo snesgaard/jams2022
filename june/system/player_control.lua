@@ -1,3 +1,5 @@
+local spawn_point = require "spawn_point"
+
 local function x_press_keymap(key)
     local dir = {left = -1, right = 1}
     return dir[key]
@@ -10,12 +12,10 @@ local function is_minion_close_enough(ecs_world)
     return (player_pos - minion_pos):length() < 100
 end
 
-local function minion_control(ctx)
+local function minion_control(ctx, entity)
     local abort = ctx:listen("keypressed")
         :filter(function(key) return key == "x" end)
         :latest()
-
-    local entity = ctx.ecs_world:entity(constants.id.minion)
 
     while ctx:is_alive() and not abort:peek() do
         for _, dt in ipairs(ctx.update:pop()) do
@@ -28,15 +28,28 @@ local function minion_control(ctx)
     end
 end
 
+local function get_closest_spawn_point(ecs_world)
+    local w, h = 100, 100
+    local entity = ecs_world:entity(constants.id.player)
+    local candidates = collision.check(entity, w, h)
+    return candidates
+    :map(function(id) return ecs_world:entity(id) end)
+    :filter(function(entity)
+        return spawn_point.is_spawn_point(entity)
+    end)
+    :head()
+end
+
 local function idle_control(ctx)
-    local swap_to_minion = ctx:listen("keypressed")
+    local spawn_minion = ctx:listen("keypressed")
         :filter(function(key) return key == "x" end)
-        :filter(function() return is_minion_close_enough(ctx.ecs_world) end)
+        :map(function() return get_closest_spawn_point(ctx.ecs_world) end)
+        :filter()
         :latest()
 
     local entity = ctx.ecs_world:entity(constants.id.player)
 
-    while ctx:is_alive() and not swap_to_minion:peek() do
+    while ctx:is_alive() and not spawn_minion:peek() do
         for _, dt in ipairs(ctx.update:pop()) do
             local dx = ctx.x:peek() * dt * 100
             local dy = 0
@@ -44,9 +57,7 @@ local function idle_control(ctx)
         end
 
         if ctx.jump_control:pop() then
-            print("go")
             entity:map(nw.component.velocity, function(v)
-                print(v.x, v.y)
                 return vec2(v.x, -200)
             end)
         end
@@ -54,7 +65,10 @@ local function idle_control(ctx)
         ctx:yield()
     end
 
-    if swap_to_minion:peek() then return minion_control(ctx) end
+    if spawn_minion:peek() then
+        local minion = spawn_point.spawn(spawn_minion:peek())
+        if minion then return minion_control(ctx, minion) end
+    end
 end
 
 return function(ctx, ecs_world)
@@ -73,7 +87,6 @@ return function(ctx, ecs_world)
 
     ctx.update = ctx:listen("update"):collect()
     ctx.jump_control = require("ai.player_jump").create(ctx, constants.id.player)
-
 
     ctx.ecs_world = ecs_world
 

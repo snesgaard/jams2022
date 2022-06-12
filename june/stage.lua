@@ -1,4 +1,5 @@
 local bumpdebug = require "bumpdebug"
+local spawn_point = require "spawn_point"
 
 return function(ctx)
     local bump_world = nw.third.bump.newWorld()
@@ -11,15 +12,12 @@ return function(ctx)
     ecs_world:entity(constants.id.player)
         :assemble(collision.set_hitbox, 20, 20)
         :assemble(collision.set_bump_world, bump_world)
-        :assemble(collision.warp_to, 200, 200)
+        :assemble(collision.warp_to, 200, 300)
         :set(nw.component.tag, "actor")
         :set(nw.component.gravity, 0, 100)
 
-    ecs_world:entity(constants.id.minion)
-        :assemble(collision.set_hitbox,10, 20)
-        :assemble(collision.set_bump_world, bump_world)
-        :assemble(collision.warp_to, 400, 270)
-        :set(nw.component.tag, "actor")
+    ctx.spawn = ecs_world:entity("spawn")
+        :assemble(spawn_point.assemble, 100, 300, bump_world)
 
     bump_world:add("platform", 0, 300, 1000, 200)
 
@@ -31,6 +29,11 @@ return function(ctx)
     while ctx:is_alive() do
         draw:pop():foreach(function()
             draw_world(bump_world)
+
+            local pos_table = ecs_world:get_component_table(nw.component.position)
+            for entity, pos in pairs(pos_table) do
+                gfx.circle("line", pos.x, pos.y, 5)
+            end
         end)
 
         ctx:yield()
