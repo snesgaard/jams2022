@@ -9,6 +9,12 @@ constants = require "constants"
 collision = require "collision"
 component = require "component"
 
+function nw.ecs.entity.on_entity_destroyed(id, values)
+    local bump_world = values[nw.component.bump_world]
+    if not bump_world then return end
+    if bump_world:hasItem(id) then bump_world:remove(id) end
+end
+
 function emit_event(entity, ...)
     local cb = entity:world():entity(constants.id.global) % component.event_callback
     if not cb then return end

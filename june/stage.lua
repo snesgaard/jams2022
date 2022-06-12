@@ -3,7 +3,7 @@ local spawn_point = require "spawn_point"
 
 return function(ctx)
     local bump_world = nw.third.bump.newWorld()
-    local ecs_world = nw.ecs.entity()
+    local ecs_world = nw.ecs.entity.create()
 
     ecs_world:entity(constants.id.global)
         :set(nw.component.bump_world, bump_world)

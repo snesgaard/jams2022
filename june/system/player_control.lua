@@ -1,4 +1,5 @@
 local spawn_point = require "spawn_point"
+local jump_control = require("ai.player_jump")
 
 local function x_press_keymap(key)
     local dir = {left = -1, right = 1}
@@ -17,11 +18,20 @@ local function minion_control(ctx, entity)
         :filter(function(key) return key == "x" end)
         :latest()
 
+    local jump_control = jump_control.create(ctx, entity.id)
+
     while ctx:is_alive() and not abort:peek() do
         for _, dt in ipairs(ctx.update:pop()) do
             local dx = ctx.x:peek() * dt * 100
             local dy = 0
             collision.move(entity, dx, dy)
+        end
+
+
+        if jump_control:pop() then
+            entity:map(nw.component.velocity, function(v)
+                return vec2(v.x, -200)
+            end)
         end
 
         ctx:yield()
@@ -86,7 +96,7 @@ return function(ctx, ecs_world)
         :reduce(function(agg, v) return agg + v end, 0)
 
     ctx.update = ctx:listen("update"):collect()
-    ctx.jump_control = require("ai.player_jump").create(ctx, constants.id.player)
+    ctx.jump_control = jump_control.create(ctx, constants.id.player)
 
     ctx.ecs_world = ecs_world
 

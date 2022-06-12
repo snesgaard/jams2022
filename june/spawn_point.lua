@@ -28,8 +28,16 @@ function spawn_point.spawn(entity)
     local bump_world = entity % nw.component.bump_world
     local pos = entity:ensure(nw.component.position)
 
-    return entity:world():entity()
+    local prev_minion = entity % component.spawned_minion
+
+    if prev_minion then prev_minion:destroy() end
+
+    local next_minion = entity:world():entity()
         :assemble(spawn_point.assemble_minion, pos.x, pos.y, bump_world)
+
+    entity:set(component.spawned_minion, next_minion)
+
+    return next_minion
 end
 
 return spawn_point
