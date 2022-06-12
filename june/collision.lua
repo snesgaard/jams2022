@@ -56,9 +56,9 @@ end
 
 function collision.init_entity(entity, x, y, hitbox, bump_world)
     entity
-        :assemble(collision.warp_to, x, y)
         :assemble(collision.set_hitbox, hitbox:unpack())
         :assemble(collision.set_bump_world, bump_world)
+        :assemble(collision.warp_to, x, y)
 end
 
 local cached_filter = {}
@@ -95,7 +95,7 @@ end
 function collision.move_body(entity, dx, dy, filter)
     local bump_world = entity % nw.component.bump_world
     local hitbox = entity % component.body
-    if not hitbox then return end
+    if not hitbox then return 0, 0, {} end
 
     if not bump_world or not bump_world:hasItem(entity.id) then
         entity:set(
@@ -145,7 +145,7 @@ function collision.move_body_to(entity, x, y, filter)
     local body = entity % component.body
     if not body then return 0, 0, {} end
     local dx, dy = x - body.x, y - body.y
-    local read_dx, real_dx, col_info = collision.move_body(
+    local real_dx, real_dy, col_info = collision.move_body(
         entity, dx, dy, filter
     )
     return body.x + real_dx, body.y + real_dy, col_info
