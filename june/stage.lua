@@ -36,6 +36,7 @@ return function(ctx)
 
     ctx.door = ecs_world:entity("door")
         :assemble(door.assemble, 400, 300, bump_world)
+        :set(component.door_switch, "switch")
 
     ctx.world:push(require "system.gravity", ecs_world)
     ctx.world:push(require "system.player_control", ecs_world)

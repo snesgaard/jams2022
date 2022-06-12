@@ -4,12 +4,22 @@ door.init_hitbox = component.body(10, 50)
 door.closed_pos = vec2(door.init_hitbox.x, door.init_hitbox.y)
 door.open_pos = vec2(door.init_hitbox.x, door.init_hitbox.y - door.init_hitbox.h)
 
+local function determine_next_state(entity)
+    local id = entity % component.door_switch
+    if not id then return end
+    local switch_state = entity:world():ensure(component.switch_state, id)
+    entity:set(component.door_state, switch_state)
+end
+
 local function handle_update(ecs_world, dt)
     local doors = ecs_world:get_component_table(component.door_state)
 
     for id, state in pairs(doors) do
+        local entity = ecs_world:entity(id)
+        local next_state = determine_next_state(entity)
+
         local next_pos = state and door.open_pos or door.closed_pos
-        collision.move_body_to(ecs_world:entity(id), next_pos.x, next_pos.y)
+        collision.move_body_to(entity, next_pos.x, next_pos.y)
     end
 end
 
@@ -29,7 +39,7 @@ function door.assemble(entity, x, y, bump_world)
         :assemble(
             collision.init_entity, x, y, door.init_hitbox, bump_world
         )
-        :set(component.door_state, true)
+        :set(component.door_state, false)
 end
 
 return door

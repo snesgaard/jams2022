@@ -18,13 +18,14 @@ function component.spawned_minion(minion) return minion end
 
 function component.actor() return true end
 
-function component.switch_state(state) return state end
+function component.switch_state(state) return state or false end
 
 function component.ground_switch() return true end
 
 function component.draw_order(order) return order or 0 end
 
-function component.door_state(open) return open end
+function component.door_state(open) return open or false end
 
+function component.door_switch(id) return id end
 
 return component
