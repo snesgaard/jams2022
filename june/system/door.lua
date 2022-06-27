@@ -11,7 +11,7 @@ local function determine_next_state(entity)
     entity:set(component.door_state, switch_state)
 end
 
-local function handle_update(ecs_world, dt)
+local function handle_update(ecs_world, tween, dt)
     local doors = ecs_world:get_component_table(component.door_state)
 
     for id, state in pairs(doors) do
@@ -19,16 +19,19 @@ local function handle_update(ecs_world, dt)
         local next_state = determine_next_state(entity)
 
         local next_pos = state and door.open_pos or door.closed_pos
-        collision.move_body_to(entity, next_pos.x, next_pos.y)
+        local pos = tween:move_to(id, next_pos)
+        collision.move_body_to(entity, pos.x, pos.y)
     end
 end
 
 function door.system(ctx, ecs_world)
     local update = ctx:listen("update"):collect()
+    local tween = imtween.create()
 
     while ctx:is_alive() do
         for _, dt in ipairs(update:pop()) do
-            handle_update(ecs_world)
+            handle_update(ecs_world, tween)
+            tween:update(dt)
         end
         ctx:yield()
     end
