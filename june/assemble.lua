@@ -5,7 +5,7 @@ local assemble = {}
 
 function assemble.player(entity, x, y, bump_world)
     entity
-        :assemble(collision.set_hitbox, 20, 20)
+        :assemble(collision.set_hitbox, 16, 32)
         :assemble(collision.set_bump_world, bump_world)
         :assemble(collision.warp_to, x, y)
         :set(nw.component.tag, "actor")

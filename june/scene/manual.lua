@@ -40,6 +40,7 @@ return function(ctx)
             render.draw_scene(ecs_world)
             draw_world(bump_world)
             render.draw_positions(ecs_world)
+            level:draw()
         end)
 
         ctx:yield()

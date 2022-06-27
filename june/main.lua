@@ -24,7 +24,7 @@ end
 
 function love.load()
     world = nw.ecs.world()
-    world:push(require "stage")
+    world:push(require "scene.manual")
 end
 
 function love.update(dt)
