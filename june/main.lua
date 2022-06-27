@@ -8,6 +8,7 @@ nw = require "nodeworks"
 constants = require "constants"
 collision = require "collision"
 component = require "component"
+assemble = require "assemble"
 
 function nw.ecs.entity.on_entity_destroyed(id, values)
     local bump_world = values[nw.component.bump_world]

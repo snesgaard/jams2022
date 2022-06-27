@@ -3,6 +3,7 @@ local spawn_point = require "spawn_point"
 local render = require "render"
 local drawable = require "drawable"
 local door = require "system.door"
+local assemble = require "assemble"
 
 return function(ctx)
     local bump_world = nw.third.bump.newWorld()
@@ -13,29 +14,18 @@ return function(ctx)
         :set(component.event_callback, function(...) ctx:emit(...) end)
 
     ecs_world:entity(constants.id.player)
-        :assemble(collision.set_hitbox, 20, 20)
-        :assemble(collision.set_bump_world, bump_world)
-        :assemble(collision.warp_to, 200, 300)
-        :set(nw.component.tag, "actor")
-        :set(component.gravity)
-        :set(nw.component.drawable, drawable.body)
-        :set(component.actor)
+        :assemble(assemble.player, 50, 50, bump_world)
 
     ctx.spawn = ecs_world:entity("spawn")
-        :assemble(spawn_point.assemble, 100, 300, bump_world)
+        :assemble(assemble.spawn_point, 100, 300, bump_world)
 
     ctx.switch = ecs_world:entity("switch")
-        :assemble(collision.warp_to, 300, 300)
-        :assemble(collision.set_hitbox, 50, 20)
-        :assemble(collision.set_bump_world, bump_world)
-        :set(nw.component.tag, "actor")
-        :set(nw.component.drawable, drawable.ground_switch)
-        :set(component.ground_switch)
+        :assemble(assemble.switch, 50, 50, bump_world)
 
     bump_world:add("platform", 0, 300, 1000, 200)
 
     ctx.door = ecs_world:entity("door")
-        :assemble(door.assemble, 400, 300, bump_world)
+        :assemble(assemble.door, 400, 300, bump_world)
         :set(component.door_switch, "switch")
 
     ctx.world:push(require "system.gravity", ecs_world)

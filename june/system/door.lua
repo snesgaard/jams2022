@@ -37,12 +37,4 @@ function door.system(ctx, ecs_world)
     end
 end
 
-function door.assemble(entity, x, y, bump_world)
-    return entity
-        :assemble(
-            collision.init_entity, x, y, door.init_hitbox, bump_world
-        )
-        :set(component.door_state, false)
-end
-
 return door
