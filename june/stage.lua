@@ -17,7 +17,7 @@ return function(ctx)
         :assemble(collision.set_bump_world, bump_world)
         :assemble(collision.warp_to, 200, 300)
         :set(nw.component.tag, "actor")
-        :set(nw.component.gravity, 0, 100)
+        :set(component.gravity)
         :set(nw.component.drawable, drawable.body)
         :set(component.actor)
 

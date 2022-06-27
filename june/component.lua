@@ -28,4 +28,6 @@ function component.door_state(open) return open or false end
 
 function component.door_switch(id) return id end
 
+function component.gravity(g) return g or vec2(0, 2000) end
+
 return component

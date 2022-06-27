@@ -67,8 +67,10 @@ local function idle_control(ctx)
         end
 
         if ctx.jump_control:pop() then
+            local g = entity:ensure(component.gravity)
+            local vy = ctx.jump_control.speed_from_height(g.y, 55)
             entity:map(nw.component.velocity, function(v)
-                return vec2(v.x, -200)
+                return vec2(v.x, -vy)
             end)
         end
 

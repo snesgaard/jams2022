@@ -59,4 +59,8 @@ function jump_control:pop()
     return v
 end
 
+function jump_control.speed_from_height(gravity, max_height)
+    return math.sqrt(max_height * 4 * 0.5 * gravity)
+end
+
 return jump_control

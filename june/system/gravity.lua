@@ -1,5 +1,5 @@
 local function apply_gravity(ecs_world, id, dt)
-    local gravity = ecs_world:get(nw.component.gravity, id)
+    local gravity = ecs_world:get(component.gravity, id)
     if not gravity then return end
     local velocity = ecs_world:ensure(nw.component.velocity, id)
     local position = ecs_world:ensure(nw.component.position, id)
@@ -66,7 +66,7 @@ return function(ctx, ecs_world)
 
     while ctx:is_alive() do
         update:pop():foreach(function(dt)
-            local gravity_table = ecs_world:get_component_table(nw.component.gravity)
+            local gravity_table = ecs_world:get_component_table(component.gravity)
             for id, _ in pairs(gravity_table) do
                 apply_gravity(ecs_world, id, dt)
             end
