@@ -24,7 +24,7 @@ end
 
 function love.load()
     world = nw.ecs.world()
-    world:push(require "scene.manual")
+    world:push(require "scene.tiled_level")
 end
 
 function love.update(dt)
