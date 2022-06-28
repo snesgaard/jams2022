@@ -24,6 +24,9 @@ end
 
 function love.load()
     world = nw.ecs.world()
+
+    function emit_event(...) world:emit(...) end
+
     world:push(require "scene.tiled_level")
 end
 

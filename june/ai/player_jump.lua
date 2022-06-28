@@ -7,7 +7,9 @@ local function collision_filter(all_col_info, id, ecs_world)
         local is_sold = collision.is_solid(col_info)
         local is_id = col_info.item == id
         local is_normal = col_info.normal.y < -0.9
-        if is_sold and is_id and is_normal then return true end
+        -- HACK: Real solution is to fix the order of event dispatching
+        local is_going_down = ecs_world:ensure(nw.component.velocity, id).y >= 0
+        if is_sold and is_id and is_normal and is_going_down then return true end
     end
 end
 
@@ -28,8 +30,8 @@ function jump_control.create(ctx, id)
                 input_timer:reset()
             end),
         collision = ctx:listen("collision")
-            :filter(function(all_col_info, ecs_world)
-                return collision_filter(all_col_info, id, ecs_world)
+            :filter(function(all_col_info)
+                return collision_filter(all_col_info, id, all_col_info.ecs_world)
             end)
             :foreach(function()
                 on_ground_timer:reset()
