@@ -44,3 +44,15 @@ end
 function love.draw()
     world:emit("draw"):spin()
 end
+
+function love.wheelmoved(x, y)
+    world:emit("wheelmoved", x, y)
+end
+
+function love.mousemoved(x, y, dx, dy)
+    world:emit("mousemoved", x, y, dx, dy)
+end
+
+function love.mousepressed(x, y, button, isTouch)
+    world:emit("mousepressed", x, y, button, isTouch)
+end

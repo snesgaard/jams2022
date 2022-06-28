@@ -50,4 +50,9 @@ function assemble.skeleton_minion(entity, x, y, bump_world)
         :set(nw.component.gravity, 0, 200)
 end
 
+function assemble.tile(entity, x, y, w, h, properties, bump_world)
+    entity
+        :assemble(collision.init_entity, x, y, spatial(0, 0, w, h), bump_world)
+end
+
 return assemble
