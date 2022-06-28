@@ -8,8 +8,7 @@ local function collision_filter(all_col_info, id, ecs_world)
         local is_id = col_info.item == id
         local is_normal = col_info.normal.y < -0.9
         -- HACK: Real solution is to fix the order of event dispatching
-        local is_going_down = ecs_world:ensure(nw.component.velocity, id).y >= 0
-        if is_sold and is_id and is_normal and is_going_down then return true end
+        if is_sold and is_id and is_normal then return true end
     end
 end
 
