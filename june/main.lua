@@ -4,6 +4,19 @@ function class()
     return c
 end
 
+function decorate(dst, src)
+    for key, value in pairs(src) do
+        local is_function = type(value) == "function"
+        if is_function then
+            if not dst[key] then
+                dst[key] = value
+            else
+                errorf("Tried to decorate key %s to table, but was already set", key)
+            end
+        end
+    end
+end
+
 nw = require "nodeworks"
 constants = require "constants"
 collision = require "collision"
@@ -45,7 +58,7 @@ function love.keyreleased(key)
 end
 
 function love.draw()
-    world:emit("draw"):spin()
+    world:emit("draw"):emit("debugdraw"):spin()
 end
 
 function love.wheelmoved(x, y)

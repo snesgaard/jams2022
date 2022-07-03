@@ -17,6 +17,7 @@ local function load_object(map, layer, object, ecs_world, bump_world)
     end
 end
 
+
 return function(ctx)
     local tiled_level = nw.third.sti("art/maps/build/develop.lua")
     local draw = ctx:listen("draw"):collect()
@@ -31,28 +32,30 @@ return function(ctx)
         print(dict(layer))
     end
 
+    nw.third.sti_parse(tiled_level, load_tile, load_object, ecs_world, bump_world)
+
     local camera_entity = ecs_world:entity()
-        :set(component.camera)
+        :set(component.camera, 50, "box")
+        :set(component.target, constants.id.player)
         :set(nw.component.position, -50, -50)
 
     ctx.world:push(camera.system, ecs_world)
-    --ecs_world:entity(constants.id.player)
-    --    :assemble(assemble.player, 50, 50, bump_world)
-
-    nw.third.sti_parse(tiled_level, load_tile, load_object, ecs_world, bump_world)
-
     ctx.world:push(require "system.gravity", ecs_world)
     ctx.world:push(require "system.player_control", ecs_world)
+
 
     while ctx:is_alive() do
         draw:pop():foreach(function()
             gfx.push()
 
             camera.push_transform(camera_entity)
-            for _, layer in ipairs(tiled_level.layers) do layer:draw() end
+            for _, layer in ipairs(tiled_level.layers) do
+                if layer.visible then layer:draw() end
+            end
             render.draw_scene(ecs_world)
-            draw_world(bump_world)
-            render.draw_positions(ecs_world)
+            --draw_world(bump_world)
+            --render.draw_positions(ecs_world)
+            camera.draw_slack(camera_entity)
 
             gfx.pop()
 

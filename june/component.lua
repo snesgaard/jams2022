@@ -30,6 +30,8 @@ function component.door_switch(id) return id end
 
 function component.gravity(g) return g or vec2(0, 2000) end
 
-function component.camera() return {} end
+function component.camera(slack, slack_type) return {slack=slack or 0, slack_type = slack_type or "box"} end
+
+function component.target(target) return target end
 
 return component
