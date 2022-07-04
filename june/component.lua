@@ -34,4 +34,6 @@ function component.camera(slack, slack_type) return {slack=slack or 0, slack_typ
 
 function component.target(target) return target end
 
+function component.one_way() return true end
+
 return component

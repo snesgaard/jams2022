@@ -47,11 +47,30 @@ function collision.set_bump_world(entity, bump_world)
     add_entity_to_world(entity)
 end
 
-function collision.default_filter(ecs_world, a, b)
-    local tag_a = ecs_world:get(nw.component.tag, a)
-    local tag_b = ecs_world:get(nw.component.tag, b)
+function collision.read_bump_hitbox(ecs_world, id)
+    local bump_world = ecs_world:get(nw.component.bump_world, id)
+    if not bump_world then return end
+    if not bump_world:hasItem(id) then return end
+    return spatial(bump_world:getRect(id))
+end
 
-    if not tag_a or not tag_b then return "slide" end
+local function handle_one_way(ecs_world, item, other)
+    local rect_a = collision.read_bump_hitbox(ecs_world, item)
+    local rect_b = collision.read_bump_hitbox(ecs_world, other)
+    if not rect_a or not rect_b then return end
+    return rect_a.y + rect_a.h <= rect_b.y and "slide" or "cross"
+end
+
+function collision.default_filter(ecs_world, item, other)
+    local one_way = ecs_world:get(component.one_way, other)
+    local is_actor = ecs_world:get(component.actor, other)
+    if one_way then
+        return handle_one_way(ecs_world, item, other)
+    elseif is_actor then
+        return "cross"
+    else
+        return "slide"
+    end
 end
 
 function collision.init_entity(entity, x, y, hitbox, bump_world)

@@ -50,6 +50,8 @@ local function cancel_on_axis(v, x_axis, y_axis)
 end
 
 local function handle_collision(ecs_world, col_info)
+    if col_info.type ~= "touch" and col_info.type ~= "slide" then return end
+
     ecs_world:map(
         nw.component.velocity, col_info.item,
         cancel_on_axis, col_info.normal.x, col_info.normal.y

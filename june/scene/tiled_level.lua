@@ -55,7 +55,7 @@ return function(ctx)
             render.draw_scene(ecs_world)
             --draw_world(bump_world)
             --render.draw_positions(ecs_world)
-            camera.draw_slack(camera_entity)
+            --camera.draw_slack(camera_entity)
 
             gfx.pop()
 
