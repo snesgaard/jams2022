@@ -34,15 +34,17 @@ return function(ctx)
 
     nw.third.sti_parse(tiled_level, load_tile, load_object, ecs_world, bump_world)
 
-    local camera_entity = ecs_world:entity()
-        :set(component.camera, 50, "box")
+    local camera_entity = ecs_world:entity(constants.id.camera)
+        :set(component.camera, 50, "box", 50)
         :set(component.target, constants.id.player)
         :set(nw.component.position, -50, -50)
+
+    local spawn_entity = ecs_world:entity()
+        :assemble(assemble.spawn_point, -150, -200, bump_world)
 
     ctx.world:push(camera.system, ecs_world)
     ctx.world:push(require "system.gravity", ecs_world)
     ctx.world:push(require "system.player_control", ecs_world)
-
 
     while ctx:is_alive() do
         draw:pop():foreach(function()

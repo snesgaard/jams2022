@@ -12,6 +12,7 @@ function assemble.player(entity, x, y, bump_world)
         :set(component.gravity)
         :set(nw.component.drawable, drawable.body)
         :set(component.actor)
+        :set(component.one_way)
 end
 
 function assemble.switch(entity, x, y, bump_world)
@@ -38,6 +39,7 @@ function assemble.spawn_point(entity, x, y, bump_world)
         :set(nw.component.tag, "actor")
         :set(component.actor)
         :set(component.spawn_point)
+        :set(nw.component.drawable, drawable.body)
 end
 
 function assemble.skeleton_minion(entity, x, y, bump_world)
@@ -47,7 +49,9 @@ function assemble.skeleton_minion(entity, x, y, bump_world)
         :assemble(collision.warp_to, x, y)
         :set(nw.component.tag, "actor")
         :set(component.actor)
-        :set(nw.component.gravity, 0, 200)
+        :set(component.gravity)
+        :set(nw.component.drawable, drawable.body)
+        :set(component.one_way)
 end
 
 function assemble.tile(entity, x, y, w, h, properties, bump_world)

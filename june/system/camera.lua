@@ -69,8 +69,10 @@ local function box_slack(ecs_world, target, id)
     local diff = target_pos - camera_pos
 
     local sx, sy = math.abs(diff.x), math.abs(diff.y)
-    local adjust_x = diff.x * math.max(0, sx - slack) / sx
-    local adjust_y = diff.y * math.max(0, sy - slack) / sy
+    local lx = math.clamp(sx - slack, 0, camera_opt.max_move)
+    local ly = math.clamp(sy - slack, 0, camera_opt.max_move)
+    local adjust_x = diff.x * lx / sx
+    local adjust_y = diff.y * ly / sy
     local x = camera_pos.x + adjust_x
     local y = camera_pos.y + adjust_y
 

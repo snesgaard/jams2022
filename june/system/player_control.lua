@@ -1,6 +1,7 @@
 local spawn_point = require "spawn_point"
 local jump_control = require("ai.player_jump")
 
+
 local function x_press_keymap(key)
     local dir = {left = -1, right = 1}
     return dir[key]
@@ -14,6 +15,8 @@ local function is_minion_close_enough(ecs_world)
 end
 
 local function minion_control(ctx, entity)
+    ctx.ecs_world:set(component.target, constants.id.camera, entity.id)
+
     local abort = ctx:listen("keypressed")
         :filter(function(key) return key == "x" end)
         :latest()
@@ -29,8 +32,10 @@ local function minion_control(ctx, entity)
 
 
         if jump_control:pop() then
+            local g = entity:ensure(component.gravity)
+            local vy = ctx.jump_control.speed_from_height(g.y, 85)
             entity:map(nw.component.velocity, function(v)
-                return vec2(v.x, -200)
+                return vec2(v.x, -vy)
             end)
         end
 
@@ -51,6 +56,8 @@ local function get_closest_spawn_point(ecs_world)
 end
 
 local function idle_control(ctx)
+    ctx.ecs_world:set(component.target, constants.id.camera, constants.id.player)
+
     local spawn_minion = ctx:listen("keypressed")
         :filter(function(key) return key == "x" end)
         :map(function() return get_closest_spawn_point(ctx.ecs_world) end)
