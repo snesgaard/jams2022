@@ -40,7 +40,11 @@ return function(ctx)
         :set(nw.component.position, -50, -50)
 
     local spawn_entity = ecs_world:entity()
-        :assemble(assemble.spawn_point, -150, -200, bump_world)
+        :assemble(assemble.spawn_point, -150, -200, bump_world, "skeleton")
+
+    local spawn_entity = ecs_world:entity()
+        :assemble(assemble.spawn_point, -350, -200, bump_world, "ghost")
+        :set(nw.component.color, 0, 0.5, 1)
 
     ctx.world:push(camera.system, ecs_world)
     ctx.world:push(require "system.gravity", ecs_world)

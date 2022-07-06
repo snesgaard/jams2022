@@ -64,6 +64,11 @@ end
 function collision.default_filter(ecs_world, item, other)
     local one_way = ecs_world:get(component.one_way, other)
     local is_actor = ecs_world:get(component.actor, other)
+    local is_item_ghost = ecs_world:get(component.ghost, item)
+    local is_other_ghost = ecs_world:get(component.ghost, other)
+
+    if is_item_ghost or is_other_ghost then return "cross" end
+
     if one_way then
         return handle_one_way(ecs_world, item, other)
     elseif is_actor then

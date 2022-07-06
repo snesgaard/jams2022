@@ -1,10 +1,19 @@
 local drawables = {}
 
+function drawables.push_state(entity)
+    local color = entity % nw.component.color
+    if color then
+        gfx.setColor(color)
+    else
+        gfx.setColor(1, 1, 1)
+    end
+end
+
 function drawables.body(entity)
     local body = entity % component.body
     if not body then return end
     local pos = entity:ensure(nw.component.position)
-    gfx.setColor(1, 1, 1)
+    drawables.push_state(entity)
     gfx.translate(pos.x, pos.y)
     gfx.rectangle("fill", body:unpack())
 end

@@ -4,8 +4,21 @@ function spawn_point.is_spawn_point(entity)
     return entity % component.spawn_point
 end
 
+function spawn_point.assemble_from_key(key)
+    if key == "skeleton" then
+        return assemble.skeleton_minion
+    elseif key == "ghost" then
+        return assemble.ghost_minion
+    else
+        errorf("Unknown minion key %s", key)
+    end
+end
+
 function spawn_point.spawn(entity)
-    if not spawn_point.is_spawn_point(entity) then return end
+    local minion_type = spawn_point.is_spawn_point(entity)
+    if not minion_type then return end
+
+    local minion_assemble = spawn_point.assemble_from_key(minion_type)
 
     local bump_world = entity % nw.component.bump_world
     local pos = entity:ensure(nw.component.position)
@@ -15,7 +28,7 @@ function spawn_point.spawn(entity)
     if prev_minion then prev_minion:destroy() end
 
     local next_minion = entity:world():entity()
-        :assemble(assemble.skeleton_minion, pos.x, pos.y, bump_world)
+        :assemble(minion_assemble, pos.x, pos.y, bump_world)
 
     entity:set(component.spawned_minion, next_minion)
 

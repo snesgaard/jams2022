@@ -7,6 +7,11 @@ local function x_press_keymap(key)
     return dir[key]
 end
 
+local function y_press_keymap(key)
+    local dir = {up = -1, down = 1}
+    return dir[key]
+end
+
 local function is_minion_close_enough(ecs_world)
     local player_pos = ecs_world:ensure(nw.component.position, constants.id.player)
     local minion_pos = ecs_world:ensure(nw.component.position, constants.id.minion)
@@ -14,9 +19,7 @@ local function is_minion_close_enough(ecs_world)
     return (player_pos - minion_pos):length() < 100
 end
 
-local function minion_control(ctx, entity)
-    ctx.ecs_world:set(component.target, constants.id.camera, entity.id)
-
+local function skeleton_minion_control(ctx, entity)
     local abort = ctx:listen("keypressed")
         :filter(function(key) return key == "x" end)
         :latest()
@@ -40,6 +43,32 @@ local function minion_control(ctx, entity)
         end
 
         ctx:yield()
+    end
+end
+
+local function ghost_minion_control(ctx, entity)
+    local abort = ctx:listen("keypressed")
+        :filter(function(key) return key == "x" end)
+        :latest()
+
+    while ctx:is_alive() and not abort:peek() do
+        for _, dt in ipairs(ctx.update:pop()) do
+            local dx = ctx.x:peek() * dt * 100
+            local dy = ctx.y:peek() * dt * 100
+            collision.move(entity, dx, dy)
+        end
+
+        ctx:yield()
+    end
+end
+
+local function minion_control(ctx, entity)
+    ctx.ecs_world:set(component.target, constants.id.camera, entity.id)
+
+    if entity:get(component.ghost) then
+        return ghost_minion_control(ctx, entity)
+    else
+        return skeleton_minion_control(ctx, entity)
     end
 end
 
@@ -101,6 +130,18 @@ return function(ctx, ecs_world)
         end)
 
     ctx.x = x_press:merge(x_release)
+        :filter()
+        :reduce(function(agg, v) return agg + v end, 0)
+
+    local y_press = ctx:listen("keypressed")
+        :map(y_press_keymap)
+
+    local y_release = ctx:listen("keyreleased")
+        :map(y_press_keymap)
+        :filter()
+        :map(function(v) return -v end)
+
+    ctx.y = y_press:merge(y_release)
         :filter()
         :reduce(function(agg, v) return agg + v end, 0)
 

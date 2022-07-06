@@ -31,14 +31,14 @@ function assemble.door(entity, x, y, bump_world)
         :set(component.door_state, false)
 end
 
-function assemble.spawn_point(entity, x, y, bump_world)
+function assemble.spawn_point(entity, x, y, bump_world, minion_type)
     entity
         :assemble(collision.set_hitbox, 100, 20)
         :assemble(collision.set_bump_world, bump_world)
         :assemble(collision.warp_to, x, y)
         :set(nw.component.tag, "actor")
         :set(component.actor)
-        :set(component.spawn_point)
+        :set(component.spawn_point, minion_type)
         :set(nw.component.drawable, drawable.body)
 end
 
@@ -52,6 +52,16 @@ function assemble.skeleton_minion(entity, x, y, bump_world)
         :set(component.gravity)
         :set(nw.component.drawable, drawable.body)
         :set(component.one_way)
+        :set(nw.component.color, 1, 0, 0)
+end
+
+function assemble.ghost_minion(entity, x, y, bump_world)
+    entity
+        :assemble(collision.init_entity, x, y, component.body(20, 30), bump_world)
+        :set(component.actor)
+        :set(nw.component.drawable, drawable.body)
+        :set(component.ghost)
+        :set(nw.component.color, 0, 1, 0)
 end
 
 function assemble.tile(entity, x, y, w, h, properties, bump_world)

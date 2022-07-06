@@ -12,7 +12,7 @@ function component.body(x, y, w, h)
     end
 end
 
-function component.spawn_point() return true end
+function component.spawn_point(type) return type or "skeleton" end
 
 function component.spawned_minion(minion) return minion end
 
@@ -41,5 +41,7 @@ end
 function component.target(target) return target end
 
 function component.one_way() return true end
+
+function component.ghost() return true end
 
 return component
