@@ -3,6 +3,7 @@ return {
         global = "global",
         player = "player",
         minion = "minion",
-        camera = "camera"
-    }
+        camera = "camera",
+    },
+    scale = 3
 }

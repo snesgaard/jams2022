@@ -17,11 +17,15 @@ function decorate(dst, src)
     end
 end
 
+love.graphics.setDefaultFilter("nearest", "nearest")
+
 nw = require "nodeworks"
 constants = require "constants"
 collision = require "collision"
 component = require "component"
 assemble = require "assemble"
+
+Frame.slice_to_pos = Spatial.centerbottom
 
 function nw.ecs.entity.on_entity_destroyed(id, values)
     local bump_world = values[nw.component.bump_world]

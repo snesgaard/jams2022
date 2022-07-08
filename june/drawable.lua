@@ -32,4 +32,15 @@ function drawables.ground_switch(entity)
     gfx.rectangle("line", body:unpack())
 end
 
+function drawables.wall_switch(entity)
+    local state = entity % component.switch_state
+    local pos = entity % nw.component.position
+    if not pos then return end
+
+    gfx.setColor(1, 1, 1)
+    local str = state and "wall_switch/on" or "wall_switch/off"
+    local image = get_atlas("art/characters"):get_frame(str)
+    image:draw("body", pos.x, pos.y)
+end
+
 return drawables

@@ -28,8 +28,8 @@ end
 
 function assemble.wall_switch(entity, x, y, bump_world)
     entity
-        :assemble(collision.init_entity, x, y, component.body(10, 10), bump_world)
-        :set(nw.component.drawable, drawable.ground_switch)
+        :assemble(collision.init_entity, x, y, component.body(16, 16), bump_world)
+        :set(nw.component.drawable, drawable.wall_switch)
         :set(component.wall_switch)
         :set(component.ghost)
         :set(component.switch_state, false)

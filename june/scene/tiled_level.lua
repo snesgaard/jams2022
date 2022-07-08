@@ -35,9 +35,10 @@ return function(ctx)
     nw.third.sti_parse(tiled_level, load_tile, load_object, ecs_world, bump_world)
 
     local camera_entity = ecs_world:entity(constants.id.camera)
-        :set(component.camera, 50, "box", 50)
+        :set(component.camera, 25, "box", 50)
         :set(component.target, constants.id.player)
-        :set(nw.component.position, -50, -50)
+        :set(nw.component.position, -12, -12)
+        :set(nw.component.scale, constants.scale, constants.scale)
 
     local spawn_entity = ecs_world:entity()
         :assemble(assemble.spawn_point, -150, -200, bump_world, "skeleton")
@@ -54,7 +55,7 @@ return function(ctx)
 
     local door = ecs_world:entity()
         :assemble(assemble.door, 0, -200, bump_world)
-        :set(component.door_switch, ground_switch.id)
+        :set(component.door_switch, wall_switch.id)
 
     ctx.world:push(camera.system, ecs_world)
     ctx.world:push(require "system.gravity", ecs_world)
