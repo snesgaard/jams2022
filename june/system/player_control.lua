@@ -1,6 +1,20 @@
 local spawn_point = require "spawn_point"
 local jump_control = require("ai.player_jump")
 
+local function get_objects_in_range(ctx, entity)
+    local w, h = 100, 100
+    local candidates = collision.check(entity, w, h)
+    return candidates:map(function(id) return entity:world():entity(id) end)
+end
+
+local function interact(object)
+    if object % component.wall_switch then
+        object:map(component.switch_state, function(s)
+            return not s
+        end)
+        return true
+    end
+end
 
 local function x_press_keymap(key)
     local dir = {left = -1, right = 1}
@@ -77,15 +91,16 @@ local function get_closest_spawn_point(ecs_world)
     local entity = ecs_world:entity(constants.id.player)
     local candidates = collision.check(entity, w, h)
     return candidates
-    :map(function(id) return ecs_world:entity(id) end)
-    :filter(function(entity)
-        return spawn_point.is_spawn_point(entity)
-    end)
-    :head()
+        :map(function(id) return ecs_world:entity(id) end)
+        :filter(function(entity)
+            return spawn_point.is_spawn_point(entity)
+        end)
+        :head()
 end
 
 local function idle_control(ctx)
     ctx.ecs_world:set(component.target, constants.id.camera, constants.id.player)
+    local entity = ctx.ecs_world:entity(constants.id.player)
 
     local spawn_minion = ctx:listen("keypressed")
         :filter(function(key) return key == "x" end)
@@ -93,13 +108,21 @@ local function idle_control(ctx)
         :filter()
         :latest()
 
-    local entity = ctx.ecs_world:entity(constants.id.player)
+    local interact_cmd = ctx:listen("keypressed")
+        :filter(function(key) return key == "c" end)
+        :map(function() return get_objects_in_range(ctx, entity) end)
+        :filter()
+        :latest()
 
     while ctx:is_alive() and not spawn_minion:peek() do
         for _, dt in ipairs(ctx.update:pop()) do
             local dx = ctx.x:peek() * dt * 100
             local dy = 0
             collision.move(entity, dx, dy)
+        end
+
+        for _, obj in ipairs(interact_cmd:pop() or {}) do
+            if interact(obj) then break end
         end
 
         if ctx.jump_control:pop() then

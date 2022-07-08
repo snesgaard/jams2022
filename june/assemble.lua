@@ -15,7 +15,7 @@ function assemble.player(entity, x, y, bump_world)
         :set(component.one_way)
 end
 
-function assemble.switch(entity, x, y, bump_world)
+function assemble.ground_switch(entity, x, y, bump_world)
     entity
         :assemble(collision.warp_to, x, y)
         :assemble(collision.set_hitbox, 50, 20)
@@ -23,12 +23,23 @@ function assemble.switch(entity, x, y, bump_world)
         :set(nw.component.tag, "actor")
         :set(nw.component.drawable, drawable.ground_switch)
         :set(component.ground_switch)
+        :set(component.actor)
+end
+
+function assemble.wall_switch(entity, x, y, bump_world)
+    entity
+        :assemble(collision.init_entity, x, y, component.body(10, 10), bump_world)
+        :set(nw.component.drawable, drawable.ground_switch)
+        :set(component.wall_switch)
+        :set(component.ghost)
+        :set(component.switch_state, false)
 end
 
 function assemble.door(entity, x, y, bump_world)
     return entity
         :assemble(collision.init_entity, x, y, door.init_hitbox, bump_world)
         :set(component.door_state, false)
+        :set(nw.component.drawable, drawable.body)
 end
 
 function assemble.spawn_point(entity, x, y, bump_world, minion_type)

@@ -22,6 +22,8 @@ function component.switch_state(state) return state or false end
 
 function component.ground_switch() return true end
 
+function component.wall_switch() return true end
+
 function component.draw_order(order) return order or 0 end
 
 function component.door_state(open) return open or false end

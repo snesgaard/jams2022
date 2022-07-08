@@ -46,9 +46,21 @@ return function(ctx)
         :assemble(assemble.spawn_point, -350, -200, bump_world, "ghost")
         :set(nw.component.color, 0, 0.5, 1)
 
+    local wall_switch = ecs_world:entity()
+        :assemble(assemble.wall_switch, -50, -200, bump_world)
+
+    local ground_switch = ecs_world:entity()
+        :assemble(assemble.ground_switch, -100, -135, bump_world)
+
+    local door = ecs_world:entity()
+        :assemble(assemble.door, 0, -200, bump_world)
+        :set(component.door_switch, ground_switch.id)
+
     ctx.world:push(camera.system, ecs_world)
     ctx.world:push(require "system.gravity", ecs_world)
     ctx.world:push(require "system.player_control", ecs_world)
+    ctx.world:push(require("system.door").system, ecs_world)
+    ctx.world:push(require "system.ground_switch", ecs_world)
 
     while ctx:is_alive() do
         draw:pop():foreach(function()
