@@ -98,6 +98,23 @@ local function get_closest_spawn_point(ecs_world)
         :head()
 end
 
+local function animation_based_on_motion(ctx, entity)
+    if ctx.jump_control:on_ground() then
+        local v = entity:ensure(nw.component.velocity)
+        if v.y >= 0 then
+            ctx.animation.play(entity, anime.necromancer.descend)
+        else
+            ctx.animation.play(entity, anime.necromancer.ascend)
+        end
+    else
+        if math.abs(ctx.x:peek()) > 0 then
+            ctx.animation.play(entity, anime.necromancer.run)
+        else
+            ctx.animation.play(entity, anime.necromancer.idle)
+        end
+    end
+end
+
 local function idle_control(ctx)
     ctx.ecs_world:set(component.target, constants.id.camera, constants.id.player)
     local entity = ctx.ecs_world:entity(constants.id.player)
@@ -138,7 +155,11 @@ local function idle_control(ctx)
 
     if spawn_minion:peek() then
         local minion = spawn_point.spawn(spawn_minion:peek())
-        if minion then return minion_control(ctx, minion) end
+        if minion then
+            animation.play(entity.id, frames.necromancer.idle)
+
+            return minion_control(ctx, minion)
+        end
     end
 end
 
