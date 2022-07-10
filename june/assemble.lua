@@ -10,7 +10,7 @@ function assemble.player(entity, x, y, bump_world)
         :assemble(collision.warp_to, x, y)
         :set(nw.component.tag, "actor")
         :set(component.gravity)
-        :set(nw.component.drawable, drawable.body)
+        :set(nw.component.drawable, drawable.animation)
         :set(component.actor)
         :set(component.one_way)
 end

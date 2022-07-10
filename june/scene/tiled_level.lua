@@ -2,27 +2,26 @@ local camera = require "system.camera"
 local render = require "render"
 local bumpdebug = require "bumpdebug"
 
-local function load_tile(map, layer, tile, x, y, ecs_world, bump_world)
-    return ecs_world:entity()
+local function load_tile(map, layer, tile, x, y, ctx)
+    return ctx:ecs_world():entity()
         :assemble(
             assemble.tile, x, y, tile.width, tile.height, tile.properties,
-            bump_world
+            ctx:bump_world()
         )
 end
 
-local function load_object(map, layer, object, ecs_world, bump_world)
+local function load_object(map, layer, object, ctx)
     if object.type == "player_spawn" then
-        return ecs_world:entity(constants.id.player)
-            :assemble(assemble.player, object.x, object.y, bump_world)
+        return ctx:ecs_world():entity(constants.id.player)
+            :assemble(assemble.player, object.x, object.y, ctx:bump_world())
     end
 end
 
 
 return function(ctx)
     local tiled_level = nw.third.sti("art/maps/build/develop.lua")
-    local draw = ctx:listen("draw"):collect()
-    local ecs_world = nw.ecs.entity.create()
-    local bump_world = nw.third.bump.newWorld()
+    local ecs_world = ctx:ecs_world()
+    local bump_world = ctx:bump_world()
 
     ecs_world:entity(constants.id.global)
         :set(nw.component.bump_world, bump_world)
@@ -32,7 +31,9 @@ return function(ctx)
         print(dict(layer))
     end
 
-    nw.third.sti_parse(tiled_level, load_tile, load_object, ecs_world, bump_world)
+    nw.third.sti_parse(
+        tiled_level, load_tile, load_object, ctx
+    )
 
     local camera_entity = ecs_world:entity(constants.id.camera)
         :set(component.camera, 25, "box", 50)
@@ -57,11 +58,14 @@ return function(ctx)
         :assemble(assemble.door, 0, -200, bump_world)
         :set(component.door_switch, wall_switch.id)
 
-    ctx.world:push(camera.system, ecs_world)
+    local draw = ctx:listen("draw"):collect()
+    local update = ctx:listen("update"):collect()
+
     ctx.world:push(require "system.gravity", ecs_world)
     ctx.world:push(require "system.player_control", ecs_world)
     ctx.world:push(require("system.door").system, ecs_world)
     ctx.world:push(require "system.ground_switch", ecs_world)
+    ctx.world:push(camera.system, ecs_world)
 
     while ctx:is_alive() do
         draw:pop():foreach(function()
@@ -71,7 +75,7 @@ return function(ctx)
             for _, layer in ipairs(tiled_level.layers) do
                 if layer.visible then layer:draw() end
             end
-            render.draw_scene(ecs_world)
+            render.draw_scene(ctx:ecs_world(), ctx:animation())
             --draw_world(bump_world)
             --render.draw_positions(ecs_world)
             --camera.draw_slack(camera_entity)
@@ -79,6 +83,10 @@ return function(ctx)
             gfx.pop()
 
         end)
+
+        for _, dt in ipairs(update:pop()) do
+            ctx:animation():update(dt)
+        end
 
         ctx:yield()
     end

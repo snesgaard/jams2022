@@ -25,6 +25,8 @@ collision = require "collision"
 component = require "component"
 assemble = require "assemble"
 
+require "ecs_context"
+
 Frame.slice_to_pos = Spatial.centerbottom
 
 function nw.ecs.entity.on_entity_destroyed(id, values)

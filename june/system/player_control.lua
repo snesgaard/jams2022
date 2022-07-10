@@ -1,6 +1,15 @@
 local spawn_point = require "spawn_point"
 local jump_control = require("ai.player_jump")
 
+local atlas = get_atlas("art/characters")
+
+local anime = {
+    necromancer = {
+        idle = atlas:get_animation("necro-silhouette"),
+        run = atlas:get_animation("necromancer_run/run"),
+    }
+}
+
 local function get_objects_in_range(ctx, entity)
     local w, h = 100, 100
     local candidates = collision.check(entity, w, h)
@@ -77,7 +86,7 @@ local function ghost_minion_control(ctx, entity)
 end
 
 local function minion_control(ctx, entity)
-    ctx.ecs_world:set(component.target, constants.id.camera, entity.id)
+    ctx:ecs_world():set(component.target, constants.id.camera, entity.id)
 
     if entity:get(component.ghost) then
         return ghost_minion_control(ctx, entity)
@@ -99,29 +108,26 @@ local function get_closest_spawn_point(ecs_world)
 end
 
 local function animation_based_on_motion(ctx, entity)
-    if ctx.jump_control:on_ground() then
-        local v = entity:ensure(nw.component.velocity)
-        if v.y >= 0 then
-            ctx.animation.play(entity, anime.necromancer.descend)
-        else
-            ctx.animation.play(entity, anime.necromancer.ascend)
-        end
+    if math.abs(ctx.x:peek()) > 0 then
+        ctx:animation():play(entity.id, anime.necromancer.run)
     else
-        if math.abs(ctx.x:peek()) > 0 then
-            ctx.animation.play(entity, anime.necromancer.run)
-        else
-            ctx.animation.play(entity, anime.necromancer.idle)
-        end
+        ctx:animation():play(entity.id, anime.necromancer.idle)
+    end
+
+    if ctx.x:peek() > 0 then
+        entity:set(nw.component.scale, 1, 1)
+    elseif ctx.x:peek() < 0 then
+        entity:set(nw.component.scale, -1, 1)
     end
 end
 
 local function idle_control(ctx)
-    ctx.ecs_world:set(component.target, constants.id.camera, constants.id.player)
-    local entity = ctx.ecs_world:entity(constants.id.player)
+    ctx:ecs_world():set(component.target, constants.id.camera, constants.id.player)
+    local entity = ctx:ecs_world():entity(constants.id.player)
 
     local spawn_minion = ctx:listen("keypressed")
         :filter(function(key) return key == "x" end)
-        :map(function() return get_closest_spawn_point(ctx.ecs_world) end)
+        :map(function() return get_closest_spawn_point(ctx:ecs_world()) end)
         :filter()
         :latest()
 
@@ -131,11 +137,17 @@ local function idle_control(ctx)
         :filter()
         :latest()
 
+    ctx:animation():play(
+        constants.id.player,
+        anime.necromancer.idle
+    )
+
     while ctx:is_alive() and not spawn_minion:peek() do
         for _, dt in ipairs(ctx.update:pop()) do
-            local dx = ctx.x:peek() * dt * 100
+            local dx = ctx.x:peek() * dt * 150
             local dy = 0
             collision.move(entity, dx, dy)
+            animation_based_on_motion(ctx, entity)
         end
 
         for _, obj in ipairs(interact_cmd:pop() or {}) do
@@ -156,14 +168,12 @@ local function idle_control(ctx)
     if spawn_minion:peek() then
         local minion = spawn_point.spawn(spawn_minion:peek())
         if minion then
-            animation.play(entity.id, frames.necromancer.idle)
-
             return minion_control(ctx, minion)
         end
     end
 end
 
-return function(ctx, ecs_world)
+return function(ctx, ecs_world, animation)
     local x_press = ctx:listen("keypressed")
         :map(x_press_keymap)
 
@@ -191,8 +201,6 @@ return function(ctx, ecs_world)
 
     ctx.update = ctx:listen("update"):collect()
     ctx.jump_control = jump_control.create(ctx, constants.id.player)
-
-    ctx.ecs_world = ecs_world
 
     while ctx:is_alive() do idle_control(ctx) end
 end

@@ -1,6 +1,6 @@
 local render = {}
 
-function render.draw_scene(ecs_world)
+function render.draw_scene(ecs_world, animation)
     local drawables = Dictionary.keys(ecs_world:get_component_table(nw.component.drawable))
 
     local function cmp(a, b)
@@ -18,7 +18,7 @@ function render.draw_scene(ecs_world)
     for _, id in ipairs(drawables) do
         local draw = ecs_world:get(nw.component.drawable, id)
         gfx.push("all")
-        draw(ecs_world:entity(id))
+        draw(ecs_world:entity(id), animation)
         gfx.pop()
     end
 end
