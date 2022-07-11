@@ -7,8 +7,26 @@ local anime = {
     necromancer = {
         idle = atlas:get_animation("necro-silhouette"),
         run = atlas:get_animation("necromancer_run/run"),
+    },
+    skeleton = {
+        idle = atlas:get_animation("skeleton/idle"),
+        run = atlas:get_animation("skeleton/run"),
     }
 }
+
+local function animation_from_input_and_motion(ctx, entity, animations)
+    if math.abs(ctx.x:peek()) > 0 then
+        ctx:animation():play(entity.id, animations.run)
+    else
+        ctx:animation():play(entity.id, animations.idle)
+    end
+
+    if ctx.x:peek() > 0 then
+        entity:set(nw.component.scale, 1, 1)
+    elseif ctx.x:peek() < 0 then
+        entity:set(nw.component.scale, -1, 1)
+    end
+end
 
 local function get_objects_in_range(ctx, entity)
     local w, h = 100, 100
@@ -49,11 +67,15 @@ local function skeleton_minion_control(ctx, entity)
 
     local jump_control = jump_control.create(ctx, entity.id)
 
+    ctx:animation():play(entity.id, anime.skeleton.idle)
+
     while ctx:is_alive() and not abort:peek() do
         for _, dt in ipairs(ctx.update:pop()) do
-            local dx = ctx.x:peek() * dt * 100
+            local dx = ctx.x:peek() * dt * 200
             local dy = 0
             collision.move(entity, dx, dy)
+
+            animation_from_input_and_motion(ctx, entity, anime.skeleton)
         end
 
 
@@ -107,20 +129,6 @@ local function get_closest_spawn_point(ecs_world)
         :head()
 end
 
-local function animation_based_on_motion(ctx, entity)
-    if math.abs(ctx.x:peek()) > 0 then
-        ctx:animation():play(entity.id, anime.necromancer.run)
-    else
-        ctx:animation():play(entity.id, anime.necromancer.idle)
-    end
-
-    if ctx.x:peek() > 0 then
-        entity:set(nw.component.scale, 1, 1)
-    elseif ctx.x:peek() < 0 then
-        entity:set(nw.component.scale, -1, 1)
-    end
-end
-
 local function idle_control(ctx)
     ctx:ecs_world():set(component.target, constants.id.camera, constants.id.player)
     local entity = ctx:ecs_world():entity(constants.id.player)
@@ -147,7 +155,7 @@ local function idle_control(ctx)
             local dx = ctx.x:peek() * dt * 150
             local dy = 0
             collision.move(entity, dx, dy)
-            animation_based_on_motion(ctx, entity)
+            animation_from_input_and_motion(ctx, entity, anime.necromancer)
         end
 
         for _, obj in ipairs(interact_cmd:pop() or {}) do

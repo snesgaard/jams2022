@@ -61,9 +61,8 @@ function assemble.skeleton_minion(entity, x, y, bump_world)
         :set(nw.component.tag, "actor")
         :set(component.actor)
         :set(component.gravity)
-        :set(nw.component.drawable, drawable.body)
+        :set(nw.component.drawable, drawable.animation)
         :set(component.one_way)
-        :set(nw.component.color, 1, 0, 0)
 end
 
 function assemble.ghost_minion(entity, x, y, bump_world)
