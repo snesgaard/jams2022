@@ -63,4 +63,16 @@ function drawables.animation(entity, animation)
     gfx.pop()
 end
 
+function drawables.spawn_point(entity)
+    local type = entity:get(component.spawn_point)
+    local frame = get_atlas("art/characters"):get_frame("spawn_point/skeleton")
+
+    gfx.push()
+    drawables.push_transform(entity)
+    drawables.push_state(entity)
+    frame:draw("body")
+    gfx.pop()
+
+end
+
 return drawables

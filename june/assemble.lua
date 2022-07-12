@@ -50,7 +50,7 @@ function assemble.spawn_point(entity, x, y, bump_world, minion_type)
         :set(nw.component.tag, "actor")
         :set(component.actor)
         :set(component.spawn_point, minion_type)
-        :set(nw.component.drawable, drawable.body)
+        :set(nw.component.drawable, drawable.spawn_point)
 end
 
 function assemble.skeleton_minion(entity, x, y, bump_world)
