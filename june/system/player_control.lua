@@ -11,8 +11,19 @@ local anime = {
     skeleton = {
         idle = atlas:get_animation("skeleton/idle"),
         run = atlas:get_animation("skeleton/run"),
+    },
+    ghost = {
+        idle = atlas:get_animation("ghost/idle")
     }
 }
+
+local function dir_from_input(ctx, entity)
+    if ctx.x:peek() > 0 then
+        entity:set(nw.component.scale, 1, 1)
+    elseif ctx.x:peek() < 0 then
+        entity:set(nw.component.scale, -1, 1)
+    end
+end
 
 local function animation_from_input_and_motion(ctx, entity, animations)
     if math.abs(ctx.x:peek()) > 0 then
@@ -21,11 +32,7 @@ local function animation_from_input_and_motion(ctx, entity, animations)
         ctx:animation():play(entity.id, animations.idle)
     end
 
-    if ctx.x:peek() > 0 then
-        entity:set(nw.component.scale, 1, 1)
-    elseif ctx.x:peek() < 0 then
-        entity:set(nw.component.scale, -1, 1)
-    end
+    dir_from_input(ctx, entity)
 end
 
 local function get_objects_in_range(ctx, entity)
@@ -96,11 +103,14 @@ local function ghost_minion_control(ctx, entity)
         :filter(function(key) return key == "x" end)
         :latest()
 
+    ctx:animation():play(entity.id, anime.ghost.idle)
+
     while ctx:is_alive() and not abort:peek() do
         for _, dt in ipairs(ctx.update:pop()) do
             local dx = ctx.x:peek() * dt * 100
             local dy = ctx.y:peek() * dt * 100
             collision.move(entity, dx, dy)
+            dir_from_input(ctx, entity)
         end
 
         ctx:yield()

@@ -108,8 +108,10 @@ local function perform_bump_move(bump_world, entity, dx, dy, filter)
     )
 
     if #col_info > 0 then
-        col_info.ecs_world = entity:world()
-        emit_event("collision", col_info)
+        for _, ci in ipairs(col_info) do
+            ci.ecs_world = entity:world()
+            emit_event("collision", ci)
+        end
     end
 
     local real_dx, real_dy = ax - x, ay - y

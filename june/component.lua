@@ -46,4 +46,6 @@ function component.one_way() return true end
 
 function component.ghost() return true end
 
+function component.goal() return true end
+
 return component

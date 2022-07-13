@@ -1,5 +1,10 @@
 local render = {}
 
+render.draw_order = {
+    prop_background = -1,
+    prop_foreground = 1
+}
+
 function render.draw_scene(ecs_world, animation)
     local drawables = Dictionary.keys(ecs_world:get_component_table(nw.component.drawable))
 

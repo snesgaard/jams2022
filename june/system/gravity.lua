@@ -74,10 +74,8 @@ return function(ctx, ecs_world)
             end
         end)
 
-        collision:pop():foreach(function(mul_col_info)
-            for _, col_info in ipairs(mul_col_info) do
-                handle_collision(ecs_world, col_info)
-            end
+        collision:pop():foreach(function(col_info)
+            handle_collision(ecs_world, col_info)
         end)
 
         ctx:yield()

@@ -1,5 +1,6 @@
 local drawable = require "drawable"
 local door = require "system.door"
+local render = require "render"
 
 local assemble = {}
 
@@ -33,6 +34,7 @@ function assemble.wall_switch(entity, x, y, bump_world)
         :set(component.wall_switch)
         :set(component.ghost)
         :set(component.switch_state, false)
+        :set(component.draw_order, render.draw_order.prop_foreground)
 end
 
 function assemble.door(entity, x, y, bump_world)
@@ -44,13 +46,14 @@ end
 
 function assemble.spawn_point(entity, x, y, bump_world, minion_type)
     entity
-        :assemble(collision.set_hitbox, 100, 20)
+        :assemble(collision.set_hitbox, 32, 32)
         :assemble(collision.set_bump_world, bump_world)
         :assemble(collision.warp_to, x, y)
         :set(nw.component.tag, "actor")
         :set(component.actor)
         :set(component.spawn_point, minion_type)
         :set(nw.component.drawable, drawable.spawn_point)
+        :set(component.draw_order, render.draw_order.prop_background)
 end
 
 function assemble.skeleton_minion(entity, x, y, bump_world)
@@ -69,14 +72,24 @@ function assemble.ghost_minion(entity, x, y, bump_world)
     entity
         :assemble(collision.init_entity, x, y, component.body(20, 30), bump_world)
         :set(component.actor)
-        :set(nw.component.drawable, drawable.body)
+        :set(nw.component.drawable, drawable.animation)
         :set(component.ghost)
-        :set(nw.component.color, 0, 1, 0)
+        :set(nw.component.color, 1, 1, 1)
 end
 
 function assemble.tile(entity, x, y, w, h, properties, bump_world)
     entity
         :assemble(collision.init_entity, x, y, spatial(0, 0, w, h), bump_world)
+end
+
+function assemble.goal(entity, x, y, bump_world)
+    entity
+        :set(component.ghost)
+        :set(component.goal)
+        :assemble(collision.init_entity, x, y, component.body(20, 30), bump_world)
+        :set(nw.component.drawable, drawable.body)
+        :set(nw.component.color, 0.2, 0.8, 0.6, 0.5)
+
 end
 
 return assemble

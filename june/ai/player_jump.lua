@@ -2,14 +2,12 @@ local jump_control = class()
 
 local function input_filter(key) return key == "space" end
 
-local function collision_filter(all_col_info, id, ecs_world)
-    for _, col_info in ipairs(all_col_info) do
-        local is_sold = collision.is_solid(col_info)
-        local is_id = col_info.item == id
-        local is_normal = col_info.normal.y < -0.9
-        -- HACK: Real solution is to fix the order of event dispatching
-        if is_sold and is_id and is_normal then return true end
-    end
+local function collision_filter(col_info, id, ecs_world)
+    local is_sold = collision.is_solid(col_info)
+    local is_id = col_info.item == id
+    local is_normal = col_info.normal.y < -0.9
+    -- HACK: Real solution is to fix the order of event dispatching
+    if is_sold and is_id and is_normal then return true end
 end
 
 jump_control.BUFFER_TIME = 0.2
