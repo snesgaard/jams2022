@@ -14,6 +14,19 @@ local function load_object(map, layer, object, ctx)
     if object.type == "player_spawn" then
         return ctx:ecs_world():entity(constants.id.player)
             :assemble(assemble.player, object.x, object.y, ctx:bump_world())
+    elseif object.type == "minion_spawn" then
+        return ctx:ecs_world():entity(object.id)
+            :assemble(assemble.spawn_point, object.x, object.y, ctx:bump_world(), "skeleton")
+    elseif object.type == "goal" then
+        return ctx:ecs_world():entity(object.id)
+            :assemble(assemble.goal, object.x, object.y, ctx:bump_world())
+    elseif object.type == "wall_switch" then
+        return ctx:ecs_world():entity(object.id)
+            :assemble(assemble.wall_switch, object.x, object.y, ctx:bump_world())
+    elseif object.type == "door" then
+        return ctx:ecs_world():entity(object.id)
+            :assemble(assemble.door, object.x, object.y, ctx:bump_world())
+            :set(component.door_switch, object.properties.switch.id)
     end
 end
 

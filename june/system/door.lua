@@ -11,6 +11,12 @@ local function determine_next_state(entity)
     entity:set(component.door_state, switch_state)
 end
 
+local function filter(ecs_world, item, other)
+    if not ecs_world:get(component.actor, other) then return "cross" end
+
+    return collision.default_filter(ecs_world, item, other)
+end
+
 local function handle_update(ecs_world, tween, dt)
     local doors = ecs_world:get_component_table(component.door_state)
 
@@ -20,7 +26,7 @@ local function handle_update(ecs_world, tween, dt)
 
         local next_pos = state and door.open_pos or door.closed_pos
         local pos = tween:move_to(id, next_pos)
-        collision.move_body_to(entity, pos.x, pos.y)
+        collision.move_body_to(entity, pos.x, pos.y, filter)
     end
 end
 
