@@ -30,13 +30,9 @@ function drawables.ground_switch(entity)
     if not body then return end
     local state = entity % component.switch_state
     local pos = entity:ensure(nw.component.position)
-    if state then
-        gfx.setColor(0.2, 0.8, 0.4)
-    else
-        gfx.setColor(0.8, 0.3, 0.2)
-    end
-    gfx.translate(pos.x, pos.y)
-    gfx.rectangle("line", body:unpack())
+    local str = state and "ground_switch/on" or "ground_switch/off"
+    local image = get_atlas("art/characters"):get_frame(str)
+    image:draw("body", pos.x, pos.y)
 end
 
 function drawables.wall_switch(entity)
@@ -70,6 +66,9 @@ function drawables.spawn_point(entity)
     gfx.push()
     drawables.push_transform(entity)
     drawables.push_state(entity)
+    if type == "ghost" then
+        gfx.setColor(0.2, 0.8, 0.4)
+    end
     frame:draw("body")
     gfx.pop()
 

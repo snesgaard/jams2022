@@ -19,12 +19,13 @@ end
 function assemble.ground_switch(entity, x, y, bump_world)
     entity
         :assemble(collision.warp_to, x, y)
-        :assemble(collision.set_hitbox, 50, 20)
+        :assemble(collision.set_hitbox, 20, 20)
         :assemble(collision.set_bump_world, bump_world)
         :set(nw.component.tag, "actor")
         :set(nw.component.drawable, drawable.ground_switch)
         :set(component.ground_switch)
         :set(component.actor)
+        :set(component.draw_order, render.draw_order.prop_foreground)
 end
 
 function assemble.wall_switch(entity, x, y, bump_world)

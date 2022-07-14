@@ -105,12 +105,22 @@ local function ghost_minion_control(ctx, entity)
 
     ctx:animation():play(entity.id, anime.ghost.idle)
 
+    local interact_cmd = ctx:listen("keypressed")
+        :filter(function(key) return key == "c" end)
+        :map(function() return get_objects_in_range(ctx, entity) end)
+        :filter()
+        :latest()
+
     while ctx:is_alive() and not abort:peek() do
         for _, dt in ipairs(ctx.update:pop()) do
             local dx = ctx.x:peek() * dt * 100
             local dy = ctx.y:peek() * dt * 100
             collision.move(entity, dx, dy)
             dir_from_input(ctx, entity)
+        end
+
+        for _, obj in ipairs(interact_cmd:pop() or {}) do
+            if interact(obj) then break end
         end
 
         ctx:yield()

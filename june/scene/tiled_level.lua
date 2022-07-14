@@ -14,26 +14,33 @@ local function load_object(map, layer, object, ctx)
     if object.type == "player_spawn" then
         return ctx:ecs_world():entity(constants.id.player)
             :assemble(assemble.player, object.x, object.y, ctx:bump_world())
-    elseif object.type == "minion_spawn" then
+    elseif object.type == "spawn_point" then
         return ctx:ecs_world():entity(object.id)
-            :assemble(assemble.spawn_point, object.x, object.y, ctx:bump_world(), "skeleton")
+            :assemble(
+                assemble.spawn_point, object.x, object.y, ctx:bump_world(),
+                object.properties.minion_type or "skeleton"
+            )
     elseif object.type == "goal" then
         return ctx:ecs_world():entity(object.id)
             :assemble(assemble.goal, object.x, object.y, ctx:bump_world())
     elseif object.type == "wall_switch" then
         return ctx:ecs_world():entity(object.id)
             :assemble(assemble.wall_switch, object.x, object.y, ctx:bump_world())
+    elseif object.type == "ground_switch" then
+        return ctx:ecs_world():entity(object.id)
+            :assemble(assemble.ground_switch, object.x, object.y, ctx:bump_world())
     elseif object.type == "door" then
+        local switch_id = object.properties.switch and object.properties.switch.id or nil
         return ctx:ecs_world():entity(object.id)
             :assemble(assemble.door, object.x, object.y, ctx:bump_world())
-            :set(component.door_switch, object.properties.switch.id)
+            :set(component.door_switch, switch_id)
     end
 end
 
 
 local function system(ctx)
     ctx:clear_global()
-    local tiled_level = nw.third.sti("art/maps/build/develop.lua")
+    local tiled_level = nw.third.sti("art/maps/build/ghost_switch.lua")
     local ecs_world = ctx:ecs_world()
     local bump_world = ctx:bump_world()
 
@@ -54,26 +61,6 @@ local function system(ctx)
         :set(component.target, constants.id.player)
         :set(nw.component.position, -200, -200)
         :set(nw.component.scale, constants.scale, constants.scale)
-
-    local spawn_entity = ecs_world:entity()
-        :assemble(assemble.spawn_point, -150, -200, bump_world, "skeleton")
-
-    local spawn_entity = ecs_world:entity()
-        :assemble(assemble.spawn_point, -350, -200, bump_world, "skeleton")
-        :set(nw.component.color, 0, 0.5, 1)
-
-    local wall_switch = ecs_world:entity()
-        :assemble(assemble.wall_switch, -50, -200, bump_world)
-
-    local ground_switch = ecs_world:entity()
-        :assemble(assemble.ground_switch, -100, -135, bump_world)
-
-    local door = ecs_world:entity()
-        :assemble(assemble.door, 0, -200, bump_world)
-        :set(component.door_switch, wall_switch.id)
-
-    local goal = ecs_world:entity()
-        :assemble(assemble.goal, 0, -340, bump_world)
 
 
     local draw = ctx:listen("draw"):collect()
