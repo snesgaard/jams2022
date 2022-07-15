@@ -41,15 +41,6 @@ local function get_objects_in_range(ctx, entity)
     return candidates:map(function(id) return entity:world():entity(id) end)
 end
 
-local function interact(object)
-    if object % component.wall_switch then
-        object:map(component.switch_state, function(s)
-            return not s
-        end)
-        return true
-    end
-end
-
 local function x_press_keymap(key)
     local dir = {left = -1, right = 1}
     return dir[key]
@@ -137,49 +128,64 @@ local function minion_control(ctx, entity)
     end
 end
 
-local function get_closest_spawn_point(ecs_world)
-    local w, h = 100, 100
-    local entity = ecs_world:entity(constants.id.player)
-    local candidates = collision.check(entity, w, h)
-    return candidates
-        :map(function(id) return ecs_world:entity(id) end)
-        :filter(function(entity)
-            return spawn_point.is_spawn_point(entity)
+local function is_interactable(entity)
+    return entity:has(component.switch_state) or spawn_point.is_spawn_point(entity)
+end
+
+local function sort_by_distance(a, b, target)
+    local pos_target = target:ensure(nw.component.position)
+    local pos_a = a:ensure(nw.component.position)
+    local pos_b = b:ensure(nw.component.position)
+
+    return (pos_a - pos_target):length() < (pos_b - pos_target):length()
+end
+
+local function find_interactables(ecs_world, entity)
+    return get_objects_in_range(ctx, entity)
+        :filter(is_interactable)
+        :sort(function(a, b) return sort_by_distance(a, b, entity) end)
+end
+
+local function interact(ctx, entity, object)
+    if object % component.wall_switch then
+        object:map(component.switch_state, function(s)
+            return not s
         end)
-        :head()
+    elseif spawn_point.is_spawn_point(object) then
+        local minion = spawn_point.spawn(object)
+        if minion then return minion_control(ctx, minion) end
+    end
 end
 
 local function idle_control(ctx)
     ctx:ecs_world():set(component.target, constants.id.camera, constants.id.player)
     local entity = ctx:ecs_world():entity(constants.id.player)
 
-    local spawn_minion = ctx:listen("keypressed")
+    local interact_input = ctx:listen("keypressed")
         :filter(function(key) return key == "x" end)
-        :map(function() return get_closest_spawn_point(ctx:ecs_world()) end)
+
+    local interactables = ctx:listen("moved")
+        :filter(function(id) return id == entity.id end)
+        :map(function(id)
+            return find_interactables(ctx:ecs_world(), ctx:ecs_world():entity(id))
+        end)
+        :latest()
+
+    local object_to_interact_with = interact_input
+        :map(function() return interactables:peek():head() end)
         :filter()
         :latest()
 
-    local interact_cmd = ctx:listen("keypressed")
-        :filter(function(key) return key == "c" end)
-        :map(function() return get_objects_in_range(ctx, entity) end)
-        :filter()
-        :latest()
+    local function should_break() return object_to_interact_with:peek() end
 
-    ctx:animation():play(
-        constants.id.player,
-        anime.necromancer.idle
-    )
+    ctx:animation():ensure(constants.id.player, anime.necromancer.idle)
 
-    while ctx:is_alive() and not spawn_minion:peek() do
+    while ctx:is_alive() and not should_break() do
         for _, dt in ipairs(ctx.update:pop()) do
             local dx = ctx.x:peek() * dt * 150
             local dy = 0
             collision.move(entity, dx, dy)
             animation_from_input_and_motion(ctx, entity, anime.necromancer)
-        end
-
-        for _, obj in ipairs(interact_cmd:pop() or {}) do
-            if interact(obj) then break end
         end
 
         if ctx.jump_control:pop() then
@@ -193,11 +199,8 @@ local function idle_control(ctx)
         ctx:yield()
     end
 
-    if spawn_minion:peek() then
-        local minion = spawn_point.spawn(spawn_minion:peek())
-        if minion then
-            return minion_control(ctx, minion)
-        end
+    if object_to_interact_with:peek() then
+        return interact(ctx, entity, object_to_interact_with:peek())
     end
 end
 

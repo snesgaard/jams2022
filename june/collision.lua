@@ -106,6 +106,9 @@ local function perform_bump_move(bump_world, entity, dx, dy, filter)
     local ax, ay, col_info = bump_world:move(
         entity.id, tx, ty, caller
     )
+    local real_dx, real_dy = ax - x, ay - y
+
+    emit_event("moved", entity.id, real_dx, real_dy)
 
     if #col_info > 0 then
         for _, ci in ipairs(col_info) do
@@ -114,7 +117,6 @@ local function perform_bump_move(bump_world, entity, dx, dy, filter)
         end
     end
 
-    local real_dx, real_dy = ax - x, ay - y
     return real_dx, real_dy, col_info
 end
 
