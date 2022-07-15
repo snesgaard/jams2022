@@ -2,7 +2,8 @@ local render = {}
 
 render.draw_order = {
     prop_background = -1,
-    prop_foreground = 1
+    prop_foreground = 1,
+    ui_foreground = 2
 }
 
 function render.draw_scene(ecs_world, animation)

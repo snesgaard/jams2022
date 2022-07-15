@@ -6,6 +6,8 @@ end
 
 function component.body(x, y, w, h)
     if w == nil then
+        local x = x or 0
+        local y = y or 0
         return spatial(-x / 2, -y, x, y)
     else
         return spatial(x, y, w, h)

@@ -159,6 +159,7 @@ end
 
 local function idle_control(ctx)
     ctx:ecs_world():set(component.target, constants.id.camera, constants.id.player)
+
     local entity = ctx:ecs_world():entity(constants.id.player)
 
     local interact_input = ctx:listen("keypressed")
@@ -169,7 +170,7 @@ local function idle_control(ctx)
         :map(function(id)
             return find_interactables(ctx:ecs_world(), ctx:ecs_world():entity(id))
         end)
-        :latest()
+        :latest{list()}
 
     local object_to_interact_with = interact_input
         :map(function() return interactables:peek():head() end)
@@ -186,6 +187,15 @@ local function idle_control(ctx)
             local dy = 0
             collision.move(entity, dx, dy)
             animation_from_input_and_motion(ctx, entity, anime.necromancer)
+
+            ctx:ecs_world():set(
+                component.target,
+                constants.id.interaction,
+                interactables
+                    :peek()
+                    :map(function(e) return e.id end)
+                    :head()
+            )
         end
 
         if ctx.jump_control:pop() then

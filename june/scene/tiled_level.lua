@@ -67,6 +67,10 @@ local function system(ctx)
     local update = ctx:listen("update"):collect()
     local goal_reached = ctx:listen("goal_reached"):latest()
 
+    local interaction_entity = ecs_world:entity(constants.id.interaction)
+        :assemble(assemble.interaction)
+        :set(component.target, constants.id.player)
+
     ctx.world:push(require "system.collision_response")
     ctx.world:push(require "system.gravity", ecs_world)
     local player_control = ctx.world:push(require "system.player_control", ecs_world)

@@ -71,7 +71,20 @@ function drawables.spawn_point(entity)
     end
     frame:draw("body")
     gfx.pop()
+end
 
+function drawables.interaction(entity)
+    local target = entity:get(component.target)
+    if not target then return end
+
+    local target_entity = entity:world():entity(target)
+    local body = target_entity:get(component.body) or component.body()
+
+    gfx.push()
+    drawables.push_transform(target_entity)
+    drawables.push_state(entity)
+    gfx.rectangle("line", body:unpack())
+    gfx.pop()
 end
 
 return drawables
