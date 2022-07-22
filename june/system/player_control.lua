@@ -1,5 +1,6 @@
 local spawn_point = require "spawn_point"
 local jump_control = require("ai.player_jump")
+local player_interact = require "ai.player_interact"
 
 local atlas = get_atlas("art/characters")
 
@@ -89,6 +90,18 @@ local function skeleton_minion_control(ctx, entity)
     end
 end
 
+local function ghost_interact()
+    if object % component.wall_switch then
+        object:map(component.switch_state, function(s)
+            return not s
+        end)
+    end
+end
+
+local function ghost_is_interactable(entity)
+    return entity:has(component.wall_switch)
+end
+
 local function ghost_minion_control(ctx, entity)
     local abort = ctx:listen("keypressed")
         :filter(function(key) return key == "x" end)
@@ -96,22 +109,16 @@ local function ghost_minion_control(ctx, entity)
 
     ctx:animation():play(entity.id, anime.ghost.idle)
 
-    local interact_cmd = ctx:listen("keypressed")
-        :filter(function(key) return key == "c" end)
-        :map(function() return get_objects_in_range(ctx, entity) end)
-        :filter()
-        :latest()
+    local interact_control = player_interact.listen(ctx, entity, ghost_is_interactable)
 
-    while ctx:is_alive() and not abort:peek() do
+    while ctx:is_alive() and not abort:peek() and interact_control:is_empty() do
         for _, dt in ipairs(ctx.update:pop()) do
             local dx = ctx.x:peek() * dt * 100
             local dy = ctx.y:peek() * dt * 100
             collision.move(entity, dx, dy)
             dir_from_input(ctx, entity)
-        end
 
-        for _, obj in ipairs(interact_cmd:pop() or {}) do
-            if interact(obj) then break end
+            interact_control:set_interact_highlight()
         end
 
         ctx:yield()
@@ -162,40 +169,18 @@ local function idle_control(ctx)
 
     local entity = ctx:ecs_world():entity(constants.id.player)
 
-    local interact_input = ctx:listen("keypressed")
-        :filter(function(key) return key == "x" end)
-
-    local interactables = ctx:listen("moved")
-        :filter(function(id) return id == entity.id end)
-        :map(function(id)
-            return find_interactables(ctx:ecs_world(), ctx:ecs_world():entity(id))
-        end)
-        :latest{list()}
-
-    local object_to_interact_with = interact_input
-        :map(function() return interactables:peek():head() end)
-        :filter()
-        :latest()
-
-    local function should_break() return object_to_interact_with:peek() end
+    local object_interaction = player_interact.listen(ctx, entity, is_interactable)
 
     ctx:animation():ensure(constants.id.player, anime.necromancer.idle)
 
-    while ctx:is_alive() and not should_break() do
+    while ctx:is_alive() and object_interaction:is_empty() do
         for _, dt in ipairs(ctx.update:pop()) do
             local dx = ctx.x:peek() * dt * 150
             local dy = 0
             collision.move(entity, dx, dy)
             animation_from_input_and_motion(ctx, entity, anime.necromancer)
 
-            ctx:ecs_world():set(
-                component.target,
-                constants.id.interaction,
-                interactables
-                    :peek()
-                    :map(function(e) return e.id end)
-                    :head()
-            )
+            object_interaction:set_interact_highlight()
         end
 
         if ctx.jump_control:pop() then
@@ -209,8 +194,8 @@ local function idle_control(ctx)
         ctx:yield()
     end
 
-    if object_to_interact_with:peek() then
-        return interact(ctx, entity, object_to_interact_with:peek())
+    if object_interaction:peek() then
+        return interact(ctx, entity, object_interaction:peek())
     end
 end
 

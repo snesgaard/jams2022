@@ -83,7 +83,16 @@ function drawables.interaction(entity)
     gfx.push()
     drawables.push_transform(target_entity)
     drawables.push_state(entity)
+
+    local margin = 5
+
+    gfx.stencil(function()
+        gfx.rectangle("fill", body:expand(margin * 2, -margin * 2):unpack())
+        gfx.rectangle("fill", body:expand(-margin * 2, margin * 2):unpack())
+    end, "replace", 1)
+    gfx.setStencilTest("equal", 0)
     gfx.rectangle("line", body:unpack())
+    gfx.setStencilTest()
     gfx.pop()
 end
 
