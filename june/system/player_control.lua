@@ -12,6 +12,7 @@ local anime = {
     skeleton = {
         idle = atlas:get_animation("skeleton/idle"),
         run = atlas:get_animation("skeleton/run"),
+        spawn = atlas:get_animation("skeleton/spawn")
     },
     ghost = {
         idle = atlas:get_animation("ghost/idle")
@@ -60,6 +61,11 @@ local function is_minion_close_enough(ecs_world)
 end
 
 local function skeleton_minion_control(ctx, entity)
+    ctx:animation():play_once(entity.id, anime.skeleton.spawn)
+    while ctx:is_alive() and not ctx:animation():done(entity.id) do
+        ctx:yield()
+    end
+
     local abort = ctx:listen("keypressed")
         :filter(function(key) return key == "x" end)
         :latest()

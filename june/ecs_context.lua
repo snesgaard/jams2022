@@ -41,3 +41,12 @@ for _, name in ipairs(func_to_forward) do
         return f(world, ...)
     end
 end
+
+function nw.ecs.World.Context:wait(time)
+    local update = self:listen("update"):collect()
+
+    while self:is_alive() and 0 < time do
+        for _, dt in ipairs(update:pop()) do time = time - dt end
+        self:yield()
+    end
+end

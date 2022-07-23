@@ -201,7 +201,7 @@ local function sanitize_spatial(entity, x, y, w, h)
         local hitbox = entity % component.body
         if hitbox then return hitbox:unpack() end
     elseif w == nil then
-        return -x / 2, -y / 2, x, y
+        return -x / 2, -y, x, y
     else
         return x, y, w, h
     end
