@@ -96,4 +96,15 @@ function drawables.interaction(entity)
     gfx.pop()
 end
 
+function drawables.particles(entity)
+    local particles = entity:get(nw.component.particles)
+    if not particles then return end
+
+    gfx.push()
+    drawables.push_transform(entity)
+    drawables.push_state(entity)
+    gfx.draw(particles, 0, 0)
+    gfx.pop()
+end
+
 return drawables

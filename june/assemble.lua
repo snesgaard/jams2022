@@ -98,4 +98,32 @@ function assemble.interaction(entity)
         :set(component.draw_order, render.draw_order.ui_foreground)
 end
 
+local dirt_image = gfx.prerender(4, 2, function(w, h)
+    gfx.setColor(1, 1, 1)
+    gfx.ellipse("fill", w / 2, h / 2, w / 2, h / 2)
+end)
+
+function assemble.skeleton_dirt_spawn(entity, x, y)
+    entity
+        :set(
+            nw.component.particles,
+            {
+                buffer = 20,
+                image = dirt_image,
+                emit = 20,
+                lifetime = 0.5,
+                dir = -math.pi * 0.5,
+                spread = math.pi * 0.25,
+                speed = {200, 300},
+                damp = 0,
+                acceleration = {0, 1000},
+                relative_rotation = true
+            }
+        )
+        :set(nw.component.position, x, y)
+        :set(nw.component.drawable, drawable.particles)
+        :set(component.draw_order, render.draw_order.ui_foreground)
+        :set(component.one_shot)
+end
+
 return assemble

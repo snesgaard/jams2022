@@ -76,6 +76,7 @@ local function system(ctx)
     local player_control = ctx.world:push(require "system.player_control", ecs_world)
     ctx.world:push(require("system.door").system, ecs_world)
     ctx.world:push(require "system.ground_switch", ecs_world)
+    ctx.world:push(require "system.particles")
     ctx.world:push(camera.system, ecs_world)
 
     local function draw_and_animate()

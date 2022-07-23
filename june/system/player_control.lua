@@ -60,8 +60,14 @@ local function is_minion_close_enough(ecs_world)
     return (player_pos - minion_pos):length() < 100
 end
 
+local function spawn_particles(ctx, entity)
+    local pos = ctx:ecs_world():get(nw.component.position, entity.id) or vec2()
+    return ctx:ecs_world():entity():assemble(assemble.skeleton_dirt_spawn, pos.x, pos.y)
+end
+
 local function skeleton_minion_control(ctx, entity)
     ctx:animation():play_once(entity.id, anime.skeleton.spawn)
+    local p = spawn_particles(ctx, entity)
     while ctx:is_alive() and not ctx:animation():done(entity.id) do
         ctx:yield()
     end

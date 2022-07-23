@@ -50,4 +50,6 @@ function component.ghost() return true end
 
 function component.goal() return true end
 
+function component.one_shot() return true end
+
 return component
