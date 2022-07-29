@@ -40,7 +40,7 @@ end
 
 local function system(ctx)
     ctx:clear_global()
-    local tiled_level = nw.third.sti("art/maps/build/develop.lua")
+    local tiled_level = nw.third.sti("art/maps/build/ground_simple.lua")
     local ecs_world = ctx:ecs_world()
     local bump_world = ctx:bump_world()
 

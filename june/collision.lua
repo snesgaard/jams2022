@@ -38,11 +38,11 @@ end
 
 function collision.set_bump_world(entity, bump_world)
     local prev_world = entity % nw.component.bump_world
-    entity:set(nw.component.bump_world, bump_world)
 
     if prev_world ~= nil and prev_world ~= bump_world then
-        prev_world:remove(entity)
+        prev_world:remove(entity.id)
     end
+    entity:set(nw.component.bump_world, bump_world)
 
     add_entity_to_world(entity)
 end

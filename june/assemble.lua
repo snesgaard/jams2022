@@ -98,7 +98,7 @@ function assemble.interaction(entity)
         :set(component.draw_order, render.draw_order.ui_foreground)
 end
 
-local dirt_image = gfx.prerender(4, 2, function(w, h)
+local dirt_image = gfx.prerender(4, 3, function(w, h)
     gfx.setColor(1, 1, 1)
     gfx.ellipse("fill", w / 2, h / 2, w / 2, h / 2)
 end)
@@ -114,10 +114,15 @@ function assemble.skeleton_dirt_spawn(entity, x, y)
                 lifetime = 0.5,
                 dir = -math.pi * 0.5,
                 spread = math.pi * 0.25,
-                speed = {200, 300},
+                speed = {100, 300},
                 damp = 0,
                 acceleration = {0, 1000},
-                relative_rotation = true
+                relative_rotation = true,
+                color = {
+                    gfx.hex2color("953f5c"),
+                    gfx.hex2color("953f5c"),
+                    gfx.hex2color("953f5c00"),
+                }
             }
         )
         :set(nw.component.position, x, y)

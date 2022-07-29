@@ -59,16 +59,24 @@ function drawables.animation(entity, animation)
     gfx.pop()
 end
 
+local function spawn_point_type_get(type)
+    local t = {
+        skeleton = "spawn_point/skeleton",
+        ghost = "spawn_point/ghost"
+    }
+
+    if not t[type] then errorf("Unknown spawn point %s", type) end
+
+    return t[type]
+end
+
 function drawables.spawn_point(entity)
     local type = entity:get(component.spawn_point)
-    local frame = get_atlas("art/characters"):get_frame("spawn_point/skeleton")
+    local frame = get_atlas("art/characters"):get_frame(spawn_point_type_get(type))
 
     gfx.push()
     drawables.push_transform(entity)
     drawables.push_state(entity)
-    if type == "ghost" then
-        gfx.setColor(0.2, 0.8, 0.4)
-    end
     frame:draw("body")
     gfx.pop()
 end

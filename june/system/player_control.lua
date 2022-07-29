@@ -148,7 +148,7 @@ local function minion_control(ctx, entity)
 end
 
 local function is_interactable(entity)
-    return entity:has(component.switch_state) or spawn_point.is_spawn_point(entity)
+    return entity:has(component.wall_switch) or spawn_point.is_spawn_point(entity)
 end
 
 local function sort_by_distance(a, b, target)
