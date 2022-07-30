@@ -74,4 +74,8 @@ function api:peek()
     return self.object_to_interact_with:peek()
 end
 
+function api:pop()
+    return self.object_to_interact_with:pop()
+end
+
 return api

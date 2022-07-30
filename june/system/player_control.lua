@@ -65,6 +65,22 @@ local function spawn_particles(ctx, entity)
     return ctx:ecs_world():entity():assemble(assemble.skeleton_dirt_spawn, pos.x, pos.y)
 end
 
+
+local function minion_is_interactable(entity)
+    return entity:has(component.wall_switch)
+end
+
+
+local function minion_interact(object)
+    if not object then return end
+
+    if object % component.wall_switch then
+        object:map(component.switch_state, function(s)
+            return not s
+        end)
+    end
+end
+
 local function skeleton_minion_control(ctx, entity)
     ctx:animation():play_once(entity.id, anime.skeleton.spawn)
     local p = spawn_particles(ctx, entity)
@@ -73,12 +89,16 @@ local function skeleton_minion_control(ctx, entity)
     end
 
     local abort = ctx:listen("keypressed")
-        :filter(function(key) return key == "x" end)
+        :filter(function(key) return key == "z" end)
         :latest()
 
     local jump_control = jump_control.create(ctx, entity.id)
 
     ctx:animation():play(entity.id, anime.skeleton.idle)
+
+    local interact_control = player_interact.listen(
+        ctx, entity, minion_is_interactable
+    )
 
     while ctx:is_alive() and not abort:peek() do
         for _, dt in ipairs(ctx.update:pop()) do
@@ -87,6 +107,9 @@ local function skeleton_minion_control(ctx, entity)
             collision.move(entity, dx, dy)
 
             animation_from_input_and_motion(ctx, entity, anime.skeleton)
+
+            interact_control:set_interact_highlight()
+            minion_interact(interact_control:pop())
         end
 
 
@@ -102,28 +125,18 @@ local function skeleton_minion_control(ctx, entity)
     end
 end
 
-local function ghost_interact()
-    if object % component.wall_switch then
-        object:map(component.switch_state, function(s)
-            return not s
-        end)
-    end
-end
-
-local function ghost_is_interactable(entity)
-    return entity:has(component.wall_switch)
-end
-
 local function ghost_minion_control(ctx, entity)
     local abort = ctx:listen("keypressed")
-        :filter(function(key) return key == "x" end)
+        :filter(function(key) return key == "z" end)
         :latest()
 
     ctx:animation():play(entity.id, anime.ghost.idle)
 
-    local interact_control = player_interact.listen(ctx, entity, ghost_is_interactable)
+    local interact_control = player_interact.listen(
+        ctx, entity, minion_is_interactable
+    )
 
-    while ctx:is_alive() and not abort:peek() and interact_control:is_empty() do
+    while ctx:is_alive() and not abort:peek() do
         for _, dt in ipairs(ctx.update:pop()) do
             local dx = ctx.x:peek() * dt * 100
             local dy = ctx.y:peek() * dt * 100
@@ -131,6 +144,7 @@ local function ghost_minion_control(ctx, entity)
             dir_from_input(ctx, entity)
 
             interact_control:set_interact_highlight()
+            minion_interact(interact_control:pop())
         end
 
         ctx:yield()
