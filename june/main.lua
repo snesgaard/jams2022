@@ -46,7 +46,7 @@ function love.load()
 
     function emit_event(...) world:emit(...) end
 
-    world:push(require "scene.tiled_level")
+    world:push(require "scene.level_select")
 end
 
 function love.update(dt)

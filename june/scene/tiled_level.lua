@@ -38,9 +38,9 @@ local function load_object(map, layer, object, ctx)
 end
 
 
-local function system(ctx)
+local function system(ctx, level_path)
     ctx:clear_global()
-    local tiled_level = nw.third.sti("art/maps/build/ground_simple.lua")
+    local tiled_level = nw.third.sti(level_path or "art/maps/build/ground_simple.lua")
     local ecs_world = ctx:ecs_world()
     local bump_world = ctx:bump_world()
 
@@ -84,6 +84,7 @@ local function system(ctx)
             gfx.push()
 
             camera.push_transform(camera_entity)
+            gfx.setColor(1, 1, 1)
             for _, layer in ipairs(tiled_level.layers) do
                 if layer.visible then layer:draw() end
             end
