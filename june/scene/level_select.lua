@@ -1,7 +1,9 @@
 local levels = {
     {name = "develop", path = "develop.lua"},
     {name = "ghost_switch", path = "ghost_switch.lua"},
-    {name = "ground_simple", path = "ground_simple.lua"}
+    {name = "ground_simple", path = "ground_simple.lua"},
+    {name = "stack", path = "skeleton_stack.lua"},
+    {name = "ghost_skeleton", path = "ghost_skeleton.lua"}
 }
 
 local function compute_vertical_offset(valign, font_h, h)

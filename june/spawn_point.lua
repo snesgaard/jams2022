@@ -3,9 +3,7 @@ local collision = require "collision"
 local spawn_point = {}
 
 function spawn_point.despawn(entity)
-    prev_minion
-        :assemble(collision.set_bump_world)
-        :remove(component.gravity)
+    entity:destroy()
 
 end
 
@@ -35,6 +33,7 @@ function spawn_point.spawn(entity)
     local prev_minion = entity % component.spawned_minion
 
     if prev_minion then
+        spawn_point.despawn(prev_minion)
     end
 
     local next_minion = entity:world():entity()

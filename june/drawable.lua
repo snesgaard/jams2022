@@ -35,6 +35,14 @@ function drawables.ground_switch(entity)
     image:draw("body", pos.x, pos.y)
 end
 
+function drawables.goal(entity)
+    local body = entity % component.body
+    if not body then return end
+    local pos = entity:ensure(nw.component.position)
+    local image = get_atlas("art/characters"):get_frame("spawn_point/goal")
+    image:draw("body", pos.x, pos.y)
+end
+
 function drawables.wall_switch(entity)
     local state = entity % component.switch_state
     local pos = entity % nw.component.position

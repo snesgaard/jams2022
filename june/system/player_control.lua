@@ -225,6 +225,20 @@ local function idle_control(ctx)
     end
 end
 
+local function x_state_from_keys()
+    local x = 0
+    if love.keyboard.isDown("left") then x = x - 1 end
+    if love.keyboard.isDown("right") then x = x + 1 end
+    return x
+end
+
+local function y_state_from_keys()
+    local y = 0
+    if love.keyboard.isDown("up") then y = y - 1 end
+    if love.keyboard.isDown("down") then y = y + 1 end
+    return y
+end
+
 return function(ctx, ecs_world, animation)
     local x_press = ctx:listen("keypressed")
         :map(x_press_keymap)
@@ -237,7 +251,7 @@ return function(ctx, ecs_world, animation)
 
     ctx.x = x_press:merge(x_release)
         :filter()
-        :reduce(function(agg, v) return agg + v end, 0)
+        :reduce(function(agg, v) return agg + v end, x_state_from_keys())
 
     local y_press = ctx:listen("keypressed")
         :map(y_press_keymap)
@@ -249,7 +263,7 @@ return function(ctx, ecs_world, animation)
 
     ctx.y = y_press:merge(y_release)
         :filter()
-        :reduce(function(agg, v) return agg + v end, 0)
+        :reduce(function(agg, v) return agg + v end, y_state_from_keys())
 
     ctx.update = ctx:listen("update"):collect()
     ctx.jump_control = jump_control.create(ctx, constants.id.player)

@@ -24,6 +24,7 @@ constants = require "constants"
 collision = require "collision"
 component = require "component"
 assemble = require "assemble"
+painter = require "painter"
 
 require "ecs_context"
 

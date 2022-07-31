@@ -37,6 +37,20 @@ local function load_object(map, layer, object, ctx)
     end
 end
 
+local function draw_controls(ecs_world)
+    local shape = spatial(10, 10, 175, 100)
+    gfx.setColor(constants.theme.grey)
+    gfx.rectangle("fill", shape:expand(16, 16):unpack())
+    gfx.setColor(constants.theme.purple)
+    gfx.rectangle("fill", shape:expand(6, 6):unpack())
+    gfx.setColor(constants.theme.light)
+    painter.text(
+        "__Controls__\n<- -> :: Move\nspace :: jump\nx :: interact\nz :: leave monion",
+        shape.x, shape.y, shape.w, shape.h,
+        {align="left", valign="top", font=constants.font.normal}
+    )
+end
+
 
 local function system(ctx, level_path)
     ctx:clear_global()
@@ -92,8 +106,9 @@ local function system(ctx, level_path)
             --draw_world(bump_world)
             --render.draw_positions(ecs_world)
             --camera.draw_slack(camera_entity)
-
             gfx.pop()
+
+            draw_controls(ecs_world)
         end)
 
         for _, dt in ipairs(update:pop()) do
@@ -123,8 +138,7 @@ local function system(ctx, level_path)
 
     ctx:kill_all_but_this()
     ctx:yield()
-
-    return system(ctx)
+    ctx.world:push(require "scene.level_select")
 end
 
 return system

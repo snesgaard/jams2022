@@ -90,6 +90,7 @@ function assemble.goal(entity, x, y, bump_world)
         :assemble(collision.init_entity, x, y, component.body(20, 30), bump_world)
         :set(nw.component.drawable, drawable.body)
         :set(nw.component.color, 0.2, 0.8, 0.6, 0.5)
+        :set(nw.component.drawable, drawable.goal)
 end
 
 function assemble.interaction(entity)

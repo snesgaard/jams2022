@@ -2,7 +2,7 @@
 <tileset version="1.5" tiledversion="1.7.2" name="brick" tilewidth="16" tileheight="16" tilecount="108" columns="6">
  <image source="../../tiles/build/sprites/brick.png" width="96" height="288"/>
  <wangsets>
-  <wangset name="Unnamed Set" type="corner" tile="-1">
+  <wangset name="brick" type="corner" tile="-1">
    <wangcolor name="brick" color="#ff0000" tile="-1" probability="1"/>
    <wangtile tileid="0" wangid="0,0,0,1,0,0,0,0"/>
    <wangtile tileid="1" wangid="0,0,0,1,0,1,0,0"/>
