@@ -1,3 +1,6 @@
 [submodule "june/nodeworks"]
 	path = june/nodeworks
 	url = git@github.com:snesgaard/nodeworks.git
+[submodule "aug_sep/nodeworks"]
+	path = aug_sep/nodeworks
+	url = git@github.com:snesgaard/nodeworks.git

@@ -1,0 +1,4 @@
+*.json
+**/atlas.png
+**/atlas.json
+**/build
