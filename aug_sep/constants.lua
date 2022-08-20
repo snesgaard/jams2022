@@ -1,5 +1,7 @@
 return {
     id = {
-        player = "player"
-    }
+        player = "player",
+        camera = "camera"
+    },
+    scale = 3
 }

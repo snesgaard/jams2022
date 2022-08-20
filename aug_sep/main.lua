@@ -1,6 +1,7 @@
 nw = require "nodeworks"
 assemble = require "assemble"
 collision = nw.system.collision
+camera = nw.system.camera
 drawable = require "drawable"
 constants = require "constants"
 render = require "render"

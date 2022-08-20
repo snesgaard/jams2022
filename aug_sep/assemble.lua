@@ -9,4 +9,12 @@ function assemble.player(entity, x, y, bump_world)
         :set(nw.component.drawable, drawable.body)
 end
 
+function assemble.tile(entity, x, y, w, h, properties, bump_world)
+    entity
+        :assemble(
+            collision().assemble.init_entity, x, y, spatial(0, 0, w, h),
+            bump_world
+        )
+end
+
 return assemble
