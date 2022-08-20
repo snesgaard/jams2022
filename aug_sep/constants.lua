@@ -1,0 +1,5 @@
+return {
+    id = {
+        player = "player"
+    }
+}
