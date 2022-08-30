@@ -27,12 +27,16 @@ end
 return function(ctx)
     local level = load_and_populate_level("art/maps/build/develop.lua")
 
+    ctx:to_cache("level", level)
+
     local draw = ctx:listen("draw"):collect()
 
     local camera_entity = level.ecs_world:entity(constants.id.camera)
         :set(nw.component.camera, 25, "box", 50)
         :set(nw.component.target, constants.id.player)
         :set(nw.component.scale, constants.scale, constants.scale)
+
+    ctx.world:push(require "system.player_control")
 
     while ctx:is_alive() do
         for _, _ in ipairs(draw:pop()) do
