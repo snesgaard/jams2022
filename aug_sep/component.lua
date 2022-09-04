@@ -16,4 +16,16 @@ end
 
 function component.draw_order(i) return i or 0 end
 
+function component.ghost() return true end
+
+function component.healing() return true end
+
+function component.activate_once() return {} end
+
+function component.gravity(x, y)
+    if not x then return vec2(0, 100) end
+
+    return vec2(x, y)
+end
+
 return component

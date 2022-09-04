@@ -7,6 +7,7 @@ function assemble.player(entity, x, y, bump_world)
             x, y, nw.component.hitbox(20, 40), bump_world
         )
         :set(nw.component.drawable, drawable.body)
+        :set(nw.component.gravity)
 end
 
 function assemble.tile(entity, x, y, w, h, properties, bump_world)

@@ -24,6 +24,11 @@ local function load_and_populate_level(path)
     return tiled_level
 end
 
+local function default_collision_filter(ecs_world, item, other)
+    if ecs_world:get(nw.component.ghost, item) or ecs_world:get(nw.component.ghost, other) then return "cross" end
+    return "slide"
+end
+
 return function(ctx)
     local level = load_and_populate_level("art/maps/build/develop.lua")
 
@@ -36,7 +41,22 @@ return function(ctx)
         :set(nw.component.target, constants.id.player)
         :set(nw.component.scale, constants.scale, constants.scale)
 
+    local hitbox_entity = level.ecs_world:entity()
+        :assemble(
+            collision().assemble.init_entity, 40, -30,
+            nw.component.hitbox(40, 40), level.bump_world
+        )
+        :set(nw.component.drawable, drawable.body)
+        :set(nw.component.ghost)
+        :set(nw.component.healing)
+        :set(nw.component.activate_once)
+
+    collision(ctx).default_filter = default_collision_filter
+
+    ctx.world:push(require "system.motion")
     ctx.world:push(require "system.player_control")
+    ctx.world:push(require "system.collision_resolver")
+
 
     while ctx:is_alive() do
         for _, _ in ipairs(draw:pop()) do
