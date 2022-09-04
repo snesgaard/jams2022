@@ -8,6 +8,7 @@ function assemble.player(entity, x, y, bump_world)
         )
         :set(nw.component.drawable, drawable.body)
         :set(nw.component.gravity)
+        :set(nw.component.health, 3)
 end
 
 function assemble.tile(entity, x, y, w, h, properties, bump_world)

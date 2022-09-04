@@ -29,6 +29,41 @@ local function default_collision_filter(ecs_world, item, other)
     return "slide"
 end
 
+local function camera_wrap(ctx)
+    local ecs_world = ctx:from_cache("level")
+        :map(function(level) return level.ecs_world end)
+        :latest()
+
+    local obs = nw.system.camera.observables(ctx)
+    while ctx:is_alive() do
+        nw.system.camera.handle_obserables(ctx, obs, ecs_world:peek())
+        ctx:yield()
+    end
+end
+
+local function generic_system_wrap(ctx, system)
+    local ecs_world = ctx:from_cache("level")
+        :map(function(level) return level.ecs_world end)
+        :latest()
+
+    local obs = system.observables(ctx)
+    while ctx:is_alive() do
+        system.handle_obserables(ctx, obs, ecs_world:peek())
+        ctx:yield()
+    end
+end
+
+local function draw_health(ecs_world, id)
+    local health = ecs_world:get(nw.component.health, id) or 0
+
+    gfx.push("all")
+    gfx.setColor(1, 0, 0)
+    for i = 1, health do
+        gfx.circle("fill", 20 * i, 20, 10, 10)
+    end
+    gfx.pop()
+end
+
 return function(ctx)
     local level = load_and_populate_level("art/maps/build/develop.lua")
 
@@ -51,11 +86,22 @@ return function(ctx)
         :set(nw.component.healing)
         :set(nw.component.activate_once)
 
+    local enemy_float = level.ecs_world:entity()
+        :assemble(
+            collision().assemble.init_entity, 120, -30,
+            nw.component.hitbox(20, 10), level.bump_world
+        )
+        :set(nw.component.drawable, drawable.body)
+        :set(nw.component.ghost)
+
     collision(ctx).default_filter = default_collision_filter
 
     ctx.world:push(require "system.motion")
     ctx.world:push(require "system.player_control")
     ctx.world:push(require "system.collision_resolver")
+    ctx.world:push(generic_system_wrap, nw.system.camera)
+    ctx.world:push(generic_system_wrap, require "system.lifetime")
+    ctx.world:push(require "system.float_enemy", enemy_float)
 
 
     while ctx:is_alive() do
@@ -69,8 +115,9 @@ return function(ctx)
             end
 
             render.draw_scene(level.ecs_world)
-
             gfx.pop()
+
+            draw_health(level.ecs_world, constants.id.player)
         end
 
         ctx:yield()
