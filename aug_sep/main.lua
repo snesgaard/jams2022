@@ -11,6 +11,7 @@ decorate(nw.component, require "component", true)
 Frame.slice_to_pos = Spatial.centerbottom
 
 function love.load()
+    love.graphics.setDefaultFilter("nearest", "nearest")
     world = nw.ecs.world()
 
     world:push(require "scene.test")

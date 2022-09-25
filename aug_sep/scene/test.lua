@@ -69,8 +69,6 @@ return function(ctx)
 
     ctx:to_cache("level", level)
 
-    local draw = ctx:listen("draw"):collect()
-
     local camera_entity = level.ecs_world:entity(constants.id.camera)
         :set(nw.component.camera, 25, "box", 50)
         :set(nw.component.target, constants.id.player)
@@ -103,8 +101,14 @@ return function(ctx)
     ctx.world:push(generic_system_wrap, require "system.lifetime")
     ctx.world:push(require "system.float_enemy", enemy_float)
 
+    local draw = ctx:listen("draw"):collect()
+    local update = ctx:listen("update"):collect()
 
     while ctx:is_alive() do
+        for _, dt in ipairs(update:pop()) do
+            nw.system.animation(ctx):update(dt, level.ecs_world)
+        end
+
         for _, _ in ipairs(draw:pop()) do
             gfx.push()
 

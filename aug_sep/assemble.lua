@@ -6,7 +6,7 @@ function assemble.player(entity, x, y, bump_world)
             collision().assemble.init_entity,
             x, y, nw.component.hitbox(20, 40), bump_world
         )
-        :set(nw.component.drawable, drawable.body)
+        :set(nw.component.drawable, drawable.animation)
         :set(nw.component.gravity)
         :set(nw.component.health, 3)
 end
