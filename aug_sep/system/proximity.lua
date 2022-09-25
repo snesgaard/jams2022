@@ -4,6 +4,12 @@ local function filter_others_on_id(id, self_id, filter)
     return true
 end
 
+local function compute_distance(id, entity)
+    local other_pos = entity:world():get(nw.component.position, id) or vec2()
+    local pos = entity:get(nw.component.position) or vec2()
+    return (pos - other_pos):length()
+end
+
 local function handle_moved(entity)
     local bump_world = entity:get(nw.component.bump_world)
     local prox = entity:get(nw.component.proximity)
@@ -14,12 +20,29 @@ local function handle_moved(entity)
     local others = bump_world:queryRect(area.x, area.y, area.w, area.h)
     local filter = prox.filter
 
-    local filter_others = List.filter(others, filter_others_on_id, entity.id, filter)
-
+    local filter_others = List.filter(others,
+        filter_others_on_id, entity.id, filter
+    )
     prox.others = filter_others
 end
 
+local function sq_distance(id, entity)
+    local other_pos = entity:world():get(nw.component.position, id) or vec2()
+    local pos = entity:get(nw.component.position) or vec2()
+    local dx = other_pos.x - pos.x
+    local dy = other_pos.y - pos.y
+    return dx * dx + dy * dy
+end
+
 local proximity = {}
+
+function proximity.square_distance(ecs_world, a, b)
+    local other_pos = ecs_world:get(nw.component.position, a) or vec2()
+    local pos = ecs_world:get(nw.component.position, b) or vec2()
+    local dx = other_pos.x - pos.x
+    local dy = other_pos.y - pos.y
+    return dx * dx + dy * dy
+end
 
 function proximity.draw(entity)
     local prox = entity:get(nw.component.proximity)

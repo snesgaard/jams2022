@@ -114,7 +114,7 @@ return function(ctx)
     local update = ctx:listen("update"):collect()
 
     local connect = Connect.create(ctx, rules, list("collision"))
-
+    
     while ctx:is_alive() do
         for _, dt in ipairs(update:pop()) do
             nw.system.animation(ctx):update(dt, level.ecs_world)
