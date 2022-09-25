@@ -18,8 +18,8 @@ end
 function drawables.push_transform(entity)
     local pos = entity:get(nw.component.position)
     if pos then gfx.translate(pos.x, pos.y) end
-    local scale = entity:get(nw.component.scale)
-    if scale then gfx.scale(scale.x, scale.y) end
+    local mirror = entity:get(nw.component.mirror)
+    if mirror then gfx.scale(-1, 1) end
 end
 
 function drawables.body(entity)

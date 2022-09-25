@@ -72,6 +72,8 @@ end
 
 function component.die_on_effect() return true end
 
+function component.die_on_impact() return true end
+
 function component.faction(n)
     if n == nil then return "neutral" end
     return n
@@ -82,5 +84,11 @@ function component.health(hp)
 end
 
 function component.damage(dmg) return dmg or 0 end
+
+function component.element(element) return element end
+
+function component.proximity(margin, filter)
+    return {margin=margin or 0, filter=filter}
+end 
 
 return component

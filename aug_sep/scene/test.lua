@@ -1,3 +1,6 @@
+local Connect = require "rules.connect"
+local Proximity = require "system.proximity"
+
 local function load_tile(map, layer, tile, x, y)
     return map.ecs_world:entity()
         :assemble(
@@ -25,20 +28,10 @@ local function load_and_populate_level(path)
 end
 
 local function default_collision_filter(ecs_world, item, other)
-    if ecs_world:get(nw.component.ghost, item) or ecs_world:get(nw.component.ghost, other) then return "cross" end
-    return "slide"
-end
-
-local function camera_wrap(ctx)
-    local ecs_world = ctx:from_cache("level")
-        :map(function(level) return level.ecs_world end)
-        :latest()
-
-    local obs = nw.system.camera.observables(ctx)
-    while ctx:is_alive() do
-        nw.system.camera.handle_obserables(ctx, obs, ecs_world:peek())
-        ctx:yield()
+    if ecs_world:get(nw.component.ghost, item) or ecs_world:get(nw.component.ghost, other) then
+        return "cross"
     end
+    return "slide"
 end
 
 local function generic_system_wrap(ctx, system)
@@ -64,6 +57,40 @@ local function draw_health(ecs_world, id)
     gfx.pop()
 end
 
+local rules = {}
+
+function rules.die(state, id)
+    state:destroy(id)
+
+    local info = {id = id}
+
+    return Connect.epoch(state, info)
+end
+
+function rules.spawn(state, parent_id)
+    local pos = state:get(nw.component.position, parent_id) or vec2()
+    local bump_world = state:get(nw.component.bump_world, parent_id)
+
+    state:entity()
+        :assemble(assemble.alchemy_cloud, pos.x, pos.y, "foobar", bump_world)
+
+    return Connect.epoch(state)
+end
+
+function rules.collision(state, colinfo)
+    local actions = list()
+
+    if state:get(nw.component.die_on_impact, colinfo.item) then
+        if state:get(nw.component.element, colinfo.item) then
+            table.insert(actions, {"spawn", colinfo.item})
+        end
+
+        table.insert(actions, {"die", colinfo.item})
+    end
+
+    return Connect.epoch(state), actions
+end
+
 return function(ctx)
     local level = load_and_populate_level("art/maps/build/develop.lua")
 
@@ -74,24 +101,6 @@ return function(ctx)
         :set(nw.component.target, constants.id.player)
         :set(nw.component.scale, constants.scale, constants.scale)
 
-    local hitbox_entity = level.ecs_world:entity()
-        :assemble(
-            collision().assemble.init_entity, 40, -30,
-            nw.component.hitbox(40, 40), level.bump_world
-        )
-        :set(nw.component.drawable, drawable.body)
-        :set(nw.component.ghost)
-        :set(nw.component.healing)
-        :set(nw.component.activate_once)
-
-    local enemy_float = level.ecs_world:entity()
-        :assemble(
-            collision().assemble.init_entity, 120, -30,
-            nw.component.hitbox(20, 10), level.bump_world
-        )
-        :set(nw.component.drawable, drawable.body)
-        :set(nw.component.ghost)
-
     collision(ctx).default_filter = default_collision_filter
 
     ctx.world:push(require "system.motion")
@@ -99,14 +108,17 @@ return function(ctx)
     ctx.world:push(require "system.collision_resolver")
     ctx.world:push(generic_system_wrap, nw.system.camera)
     ctx.world:push(generic_system_wrap, require "system.lifetime")
-    ctx.world:push(require "system.float_enemy", enemy_float)
+    ctx.world:push(Proximity.system)
 
     local draw = ctx:listen("draw"):collect()
     local update = ctx:listen("update"):collect()
 
+    local connect = Connect.create(ctx, rules, list("collision"))
+
     while ctx:is_alive() do
         for _, dt in ipairs(update:pop()) do
             nw.system.animation(ctx):update(dt, level.ecs_world)
+            connect:spin()
         end
 
         for _, _ in ipairs(draw:pop()) do
@@ -119,6 +131,7 @@ return function(ctx)
             end
 
             render.draw_scene(level.ecs_world)
+            Proximity.draw(level.ecs_world:entity(constants.id.player))
             gfx.pop()
 
             draw_health(level.ecs_world, constants.id.player)

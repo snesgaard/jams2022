@@ -1,5 +1,5 @@
 build:
 	make -C art
 
-play:
+play: build
 	love .
