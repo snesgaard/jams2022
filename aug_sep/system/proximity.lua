@@ -1,6 +1,6 @@
-local function filter_others_on_id(id, self_id, filter)
+local function filter_others_on_id(id, self_id, filter, ecs_world)
     if id == self_id then return false end
-    if filter then return fitler(id) end
+    if filter then return filter(ecs_world, id) end
     return true
 end
 
@@ -21,7 +21,7 @@ local function handle_moved(entity)
     local filter = prox.filter
 
     local filter_others = List.filter(others,
-        filter_others_on_id, entity.id, filter
+        filter_others_on_id, entity.id, filter, entity:world()
     )
     prox.others = filter_others
 end

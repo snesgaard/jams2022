@@ -13,6 +13,12 @@ local function load_object(map, layer, object)
     if object.type == "player_spawn" then
         return map.ecs_world:entity(constants.id.player)
             :assemble(assemble.player, object.x, object.y, map.bump_world)
+    elseif object.type == "reagent" then
+        return map.ecs_world:entity(object.id)
+            :assemble(
+                assemble.reagent, object.x, object.y, map.bump_world,
+                object.properties.reagent
+            )
     end
 end
 
@@ -53,6 +59,23 @@ local function draw_health(ecs_world, id)
     gfx.setColor(1, 0, 0)
     for i = 1, health do
         gfx.circle("fill", 20 * i, 20, 10, 10)
+    end
+    gfx.pop()
+end
+
+local function draw_reagent_inventory(ecs_world, id)
+    local inventory = ecs_world:ensure(nw.component.reagent_inventory, id)
+
+    local reagent_color = {
+        sulfur = color(0.8, 0.8, 0.2),
+        mushroom = color(0.2, 0.3, 0.8),
+        flower = color(0.8, 0.3, 0.2)
+    }
+
+    gfx.push("all")
+    for index, reagent in ipairs(inventory) do
+        gfx.setColor(reagent_color[reagent])
+        gfx.circle("fill", 20 * index, 40, 10, 10)
     end
     gfx.pop()
 end
@@ -114,7 +137,7 @@ return function(ctx)
     local update = ctx:listen("update"):collect()
 
     local connect = Connect.create(ctx, rules, list("collision"))
-    
+
     while ctx:is_alive() do
         for _, dt in ipairs(update:pop()) do
             nw.system.animation(ctx):update(dt, level.ecs_world)
@@ -135,6 +158,7 @@ return function(ctx)
             gfx.pop()
 
             draw_health(level.ecs_world, constants.id.player)
+            draw_reagent_inventory(level.ecs_world, constants.id.player)
         end
 
         ctx:yield()

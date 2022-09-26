@@ -1,5 +1,16 @@
 local assemble = {}
 
+function assemble.reagent(entity, x, y, bump_world, reagent)
+    return entity
+        :assemble(
+            collision().assemble.init_entity,
+            x, y, nw.component.hitbox(16, 16), bump_world
+        )
+        :set(nw.component.drawable, drawable.reagent)
+        :set(nw.component.reagent, reagent)
+        :set(nw.component.ghost)
+end
+
 function assemble.player(entity, x, y, bump_world)
     entity
         :assemble(

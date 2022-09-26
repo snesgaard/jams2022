@@ -1,4 +1,5 @@
 local Jump = require "system.player_jump"
+local proximity = require "system.proximity"
 
 local animations = {
     idle = get_atlas("art/characters"):get_animation("alchemist_chibi")
@@ -34,12 +35,45 @@ local function throw_projectile(entity, bump_world)
         )
 end
 
+local function is_reagent(ecs_world, id)
+    return ecs_world:get(nw.component.reagent, id)
+end
+
+local function handle_pickup(entity, ecs_world)
+    local prox = entity:ensure(nw.component.proximity)
+    local others = prox.others or list()
+    local ecs_world = ecs_world or entity:world()
+
+    local candidate = others
+        :filter(function(id) return is_reagent(ecs_world, id) end)
+        :sort(function(a, b)
+            local da = proximity.square_distance(ecs_world, entity.id, a)
+            local db = proximity.square_distance(ecs_world, entity.id, b)
+            return da < db
+        end)
+        :head()
+
+    if not candidate then return end
+
+    local reagent_type = ecs_world:get(nw.component.reagent, candidate)
+    ecs_world:destroy(candidate)
+
+    entity:map(nw.component.reagent_inventory, function(current)
+        return current + list(reagent_type)
+    end)
+end
+
 local rules = {}
 
 return function(ctx)
     local update = ctx:listen("update"):collect()
+
     local throw = ctx:listen("keypressed")
         :filter(function(k) return k == "a" end)
+        :collect()
+
+    local pickup = ctx:listen("keypressed")
+        :filter(function(k) return k == "p" end)
         :collect()
 
     local function x_dir()
@@ -57,6 +91,13 @@ return function(ctx)
         :map(function(level)
             return level.ecs_world:entity(constants.id.player)
         end)
+        :map(function(entity)
+            return entity:set(nw.component.proximity, 10, is_reagent)
+        end)
+        :latest()
+
+    local ecs_world = ctx:from_cache("level")
+        :map(function(level) return level.ecs_world end)
         :latest()
 
     local bump_world = ctx:from_cache("level")
@@ -88,6 +129,10 @@ return function(ctx)
 
         for _, _ in ipairs(throw:pop()) do
             throw_projectile(player_entity:peek(), bump_world:peek())
+        end
+
+        for _, _ in ipairs(pickup:pop()) do
+            handle_pickup(player_entity:peek())
         end
 
         ctx:yield()

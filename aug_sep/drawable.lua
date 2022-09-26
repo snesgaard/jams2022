@@ -62,5 +62,28 @@ function drawables.body(entity)
     gfx.pop()
 end
 
+local function reagent_frames()
+    return {
+        mushroom = get_atlas("art/characters"):get_frame("reagents/mushroom"),
+        flower = get_atlas("art/characters"):get_frame("reagents/flower"),
+        sulfur = get_atlas("art/characters"):get_frame("reagents/sulfur")
+    }
+end
+
+function drawables.reagent(entity)
+    local reagent_type = entity:get(nw.component.reagent)
+    if not reagent_type then return drawables.body(entity) end
+    local rf = reagent_frames()[reagent_type]
+    if not rf then return drawables.body(entity) end
+
+    gfx.push("all")
+    drawables.push_transform(entity)
+    drawables.push_state(entity)
+
+    rf:draw("body")
+
+    gfx.pop()
+end
+
 
 return drawables

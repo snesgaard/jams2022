@@ -89,6 +89,12 @@ function component.element(element) return element end
 
 function component.proximity(margin, filter)
     return {margin=margin or 0, filter=filter}
-end 
+end
+
+function component.reagent(type) return type end
+
+function component.reagent_inventory(l)
+    return l or list("mushroom", "sulfur", "flower")
+end
 
 return component
