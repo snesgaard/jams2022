@@ -5,7 +5,7 @@ render.draw_order = {
 
 function render.draw_scene(ecs_world, animation)
     local drawables = Dictionary.keys(
-        ecs_world:get_component_table(nw.component.drawable)
+        ecs_world:get_component_table(nw.component.drawable, true)
     )
 
     local function cmp(a, b)

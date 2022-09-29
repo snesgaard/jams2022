@@ -6,7 +6,7 @@ function lifetime.observables(ctx)
     }
 end
 
-local function handle_update(dt, ecs_world)
+function lifetime.handle_update(dt, ecs_world)
     local entities = ecs_world:get_component_table(nw.component.lifetime)
 
     for id, lifetime in pairs(entities) do
@@ -18,10 +18,12 @@ local function handle_update(dt, ecs_world)
     end
 end
 
-function lifetime.handle_obserables(ctx, obs, ecs_world, ...)
+function lifetime.handle_observables(ctx, obs, ecs_world, ...)
     if not ecs_world then return end
 
-    obs.update:pop():foreach(handle_update, ecs_world)
+    obs.update:peek():foreach(lifetime.handle_update, ecs_world)
+
+    return lifetime.handle_observables(obs, ...)
 end
 
 return lifetime

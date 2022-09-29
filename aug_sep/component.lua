@@ -97,4 +97,8 @@ function component.reagent_inventory(l)
     return l or list("mushroom", "sulfur", "flower")
 end
 
+function component.paused(v)
+    return v
+end
+
 return component

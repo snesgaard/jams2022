@@ -22,15 +22,6 @@ function drawables.push_transform(entity)
     if mirror then gfx.scale(-1, 1) end
 end
 
-function drawables.body(entity)
-    local body = entity % nw.component.hitbox
-    if not body then return end
-    local pos = entity:ensure(nw.component.position)
-    drawables.push_state(entity)
-    gfx.translate(pos.x, pos.y)
-    gfx.rectangle("fill", body:unpack())
-end
-
 function drawables.animation(entity)
     gfx.push()
     drawables.push_transform(entity)

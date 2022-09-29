@@ -28,6 +28,14 @@ local function load_and_populate_level(path)
     tiled_level.bump_world = nw.third.bump.newWorld()
     tiled_level.ecs_world = nw.ecs.entity.create()
 
+    function tiled_level.ecs_world:get_component_table(component, get_all)
+        local tab = nw.ecs.entity.get_component_table(self, component)
+        if get_all then return tab end
+        return Dictionary.filter(tab, function(id, _)
+            return not self:get(nw.component.paused, id)
+        end)
+    end
+
     nw.third.sti_parse(tiled_level, load_tile, load_object)
 
     return tiled_level
@@ -38,18 +46,6 @@ local function default_collision_filter(ecs_world, item, other)
         return "cross"
     end
     return "slide"
-end
-
-local function generic_system_wrap(ctx, system)
-    local ecs_world = ctx:from_cache("level")
-        :map(function(level) return level.ecs_world end)
-        :latest()
-
-    local obs = system.observables(ctx)
-    while ctx:is_alive() do
-        system.handle_obserables(ctx, obs, ecs_world:peek())
-        ctx:yield()
-    end
 end
 
 local function draw_health(ecs_world, id)
@@ -126,28 +122,42 @@ return function(ctx)
 
     collision(ctx).default_filter = default_collision_filter
 
-    ctx.world:push(require "system.motion")
     ctx.world:push(require "system.player_control")
     ctx.world:push(require "system.collision_resolver")
-    ctx.world:push(generic_system_wrap, nw.system.camera)
-    ctx.world:push(generic_system_wrap, require "system.lifetime")
     ctx.world:push(Proximity.system)
 
     local draw = ctx:listen("draw"):collect()
     local update = ctx:listen("update"):collect()
+    local collision = ctx:listen("collision"):collect()
 
     local connect = Connect.create(ctx, rules, list("collision"))
 
+    local systems = list(
+        nw.system.camera,
+        require "system.lifetime",
+        nw.system.motion(ctx),
+        nw.system.animation(ctx)
+    )
+
+    local systems_with_obs = systems
+        :map(function(system) return system.observables(ctx) end)
+
     while ctx:is_alive() do
-        for _, dt in ipairs(update:pop()) do
-            nw.system.animation(ctx):update(dt, level.ecs_world)
-            connect:spin()
+        -- TODO: This is the way to go. Pausing can be implemented easily be
+        -- simply filtering which ecs worlds are given to each system.
+        for i = 1, systems:size() do
+            local sys = systems[i]
+            local obs = systems_with_obs[i]
+            sys.handle_observables(ctx, obs, level.ecs_world)
         end
 
+        connect:spin()
+        
         for _, _ in ipairs(draw:pop()) do
             gfx.push()
 
-            camera.push_transform(camera_entity)
+            nw.system.camera.push_transform(camera_entity)
+
             gfx.setColor(1, 1, 1)
             for _, layer in ipairs(level.layers) do
                 if layer.visible then layer:draw() end

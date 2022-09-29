@@ -65,7 +65,7 @@ end
 
 local rules = {}
 
-return function(ctx)
+local function idle(ctx)
     local update = ctx:listen("update"):collect()
 
     local throw = ctx:listen("keypressed")
@@ -95,6 +95,10 @@ return function(ctx)
             return entity:set(nw.component.proximity, 10, is_reagent)
         end)
         :latest()
+
+    function ctx:paused()
+        return player_entity:peek():get(nw.component.paused)
+    end
 
     local ecs_world = ctx:from_cache("level")
         :map(function(level) return level.ecs_world end)
@@ -135,6 +139,13 @@ return function(ctx)
             handle_pickup(player_entity:peek())
         end
 
+        ctx:yield()
+    end
+end
+
+return function(ctx)
+    while ctx:is_alive() do
+        idle(ctx)
         ctx:yield()
     end
 end
